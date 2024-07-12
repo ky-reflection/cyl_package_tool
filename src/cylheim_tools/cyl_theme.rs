@@ -1,5 +1,6 @@
 // use serde::{Deserialize, Serialize};
 // #[derive(Serialize, Deserialize, Debug)]
+#[allow(unused)]
 pub enum CylheimThemeColor {
     Paff,
     NekoTheElder,
@@ -28,6 +29,7 @@ pub enum CylheimThemeColor {
     CustomColor(String),
 }
 impl CylheimThemeColor {
+    #[allow(unused)]
     fn get_color(&self) -> &str {
         match self {
             CylheimThemeColor::Paff => "#FF5BC098",
