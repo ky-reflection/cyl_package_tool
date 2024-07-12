@@ -115,3 +115,65 @@ impl CylheimDiffOption {
         }
     }
 }
+#[allow(unused)]
+pub enum CylheimThemeIcon {
+    Paff,
+    NekoTheElder,
+    Robo,
+    Ivy,
+    CrystalPunk,
+    Vanessa,
+    VanessaS,
+    Bobo,
+    Graffj,
+    Amiya,
+    Kaf,
+    Alice,
+    Hans,
+    KizunaAi,
+    Miku,
+    Ilka,
+    Xenon,
+    Conner,
+    Cherry,
+    Joe,
+    Sagar,
+    Rin,
+    Aroma,
+    Nora,
+    NekoTheYounger,
+    CustomColor(String),
+}
+impl CylheimThemeIcon {
+    #[allow(unused)]
+    fn get_icon_path(&self) -> &str {
+        match self {
+            CylheimThemeIcon::Paff => "cyl://cyicons/paff001",
+            CylheimThemeIcon::NekoTheElder => "cyl://cyicons/neko001",
+            CylheimThemeIcon::Robo => "cyl://cyicons/robo001",
+            CylheimThemeIcon::Ivy => "cyl://cyicons/ivy001",
+            CylheimThemeIcon::CrystalPunk => "cyl://cyicons/cherry002",
+            CylheimThemeIcon::Vanessa => "cyl://cyicons/vanessa001",
+            CylheimThemeIcon::VanessaS => "cyl://cyicons/vanessa001s",
+            CylheimThemeIcon::Bobo => "cyl://cyicons/bobo001",
+            CylheimThemeIcon::Graffj => "cyl://cyicons/graffj001",
+            CylheimThemeIcon::Amiya => "cyl://cyicons/amiya001",
+            CylheimThemeIcon::Kaf => "cyl://cyicons/kaf001",
+            CylheimThemeIcon::Alice => "cyl://cyicons/alice001",
+            CylheimThemeIcon::Hans => "cyl://cyicons/hans001",
+            CylheimThemeIcon::KizunaAi => "cyl://cyicons/ai001",
+            CylheimThemeIcon::Miku => "cyl://cyicons/miku001",
+            CylheimThemeIcon::Ilka => "cyl://cyicons/ilka001",
+            CylheimThemeIcon::Xenon => "cyl://cyicons/xenon001",
+            CylheimThemeIcon::Conner => "cyl://cyicons/conner001",
+            CylheimThemeIcon::Cherry => "cyl://cyicons/cherry001",
+            CylheimThemeIcon::Joe => "cyl://cyicons/joe001",
+            CylheimThemeIcon::Sagar => "cyl://cyicons/sagar001",
+            CylheimThemeIcon::Rin => "cyl://cyicons/rin001",
+            CylheimThemeIcon::Aroma => "cyl://cyicons/paff002",
+            CylheimThemeIcon::Nora => "cyl://cyicons/robo002",
+            CylheimThemeIcon::NekoTheYounger => "cyl://cyicons/neko002",
+            CylheimThemeIcon::CustomColor(custom_path) => custom_path.as_str(),
+        }
+    }
+}
