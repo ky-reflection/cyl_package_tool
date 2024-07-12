@@ -60,3 +60,58 @@ impl CylheimThemeColor {
         }
     }
 }
+#[allow(unused)]
+pub enum CylheimDiffOption {
+    EASY,
+    HARD,
+    CHAOS,
+    GLITCH,
+    CRASH,
+    DREAM,
+    Custom(CylheimDiffMeta),
+}
+#[derive(Clone)]
+#[allow(unused)]
+pub struct CylheimDiffMeta {
+    diff_name: String,
+    diff_text_color: String,
+    diff_background_color: String,
+}
+impl CylheimDiffOption {
+    #[allow(unused)]
+    fn get_meta(&self) -> CylheimDiffMeta {
+        match self {
+            CylheimDiffOption::EASY => CylheimDiffMeta {
+                diff_name: "EASY".to_string(),
+                diff_text_color: "#FF003366".to_string(),
+                diff_background_color: "#B333CCFF".to_string(),
+            },
+            CylheimDiffOption::HARD => CylheimDiffMeta {
+                diff_name: "HARD".to_string(),
+                diff_text_color: "#FF330000".to_string(),
+                diff_background_color: "#B3FF3333".to_string(),
+            },
+            CylheimDiffOption::CHAOS => CylheimDiffMeta {
+                diff_name: "CHAOS".to_string(),
+                diff_text_color: "#FF330033".to_string(),
+                diff_background_color: "#B3FF33FF".to_string(),
+            },
+            CylheimDiffOption::GLITCH => CylheimDiffMeta {
+                diff_name: "GLITCH".to_string(),
+                diff_text_color: "#FF002E1D".to_string(),
+                diff_background_color: "#B300A96B".to_string(),
+            },
+            CylheimDiffOption::CRASH => CylheimDiffMeta {
+                diff_name: "CRASH".to_string(),
+                diff_text_color: "#FF452E13".to_string(),
+                diff_background_color: "#B3FFC000".to_string(),
+            },
+            CylheimDiffOption::DREAM => CylheimDiffMeta {
+                diff_name: "DREAM".to_string(),
+                diff_text_color: "#FF3E3E3E".to_string(),
+                diff_background_color: "#B3FFFFFF".to_string(),
+            },
+            CylheimDiffOption::Custom(custom_meta) => custom_meta.clone(),
+        }
+    }
+}
