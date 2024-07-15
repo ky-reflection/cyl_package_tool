@@ -1,5 +1,5 @@
-// use serde::{Deserialize, Serialize};
-// #[derive(Serialize, Deserialize, Debug)]
+use serde::{Deserialize, Serialize};
+#[derive(Serialize, Deserialize, Debug)]
 #[allow(unused)]
 pub enum CylheimThemeColor {
     Paff,
@@ -60,6 +60,7 @@ impl CylheimThemeColor {
         }
     }
 }
+#[derive(Serialize, Deserialize, Debug)]
 #[allow(unused)]
 pub enum CylheimDiffOption {
     EASY,
@@ -70,7 +71,7 @@ pub enum CylheimDiffOption {
     DREAM,
     Custom(CylheimDiffMeta),
 }
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[allow(unused)]
 pub struct CylheimDiffMeta {
     pub diff_name: String,
