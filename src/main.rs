@@ -1,11 +1,11 @@
 mod cylheim_tools;
-use cylheim_tools::CylheimProjectConfig;
-use cylheim_tools::CytoidLevelMetaConfig;
-use rand::thread_rng;
+use cylheim_tools::{CylheimChart, CylheimProjectConfig};
 use std::fs;
-use walkdir::WalkDir;
 #[allow(dead_code)]
 
 fn main() {
-    println!("Hello, world!");
+    let path = "./resource/test.json";
+    let text = fs::read_to_string(path).unwrap();
+    let config: CylheimChart = serde_json::from_str(&text).unwrap();
+    // println!("{:#?}", config);
 }
