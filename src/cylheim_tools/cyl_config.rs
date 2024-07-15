@@ -3,59 +3,59 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CylheimProjectConfig {
     #[serde(rename = "Version", default = "default_cyl_version")]
-    version: isize,
+    pub version: isize,
     #[serde(rename = "ChartInfos")]
-    chart_infos: Vec<ChartInfo>,
+    pub chart_infos: Vec<ChartInfo>,
     #[serde(rename = "LastOpenedChart")]
-    last_open_chart: Option<String>,
+    pub last_open_chart: Option<String>,
     #[serde(rename = "LastEditedTime")]
-    last_edit_time: f64,
+    pub last_edit_time: f64,
     #[serde(rename = "LevelMetaConfig")]
-    level_meta_config: Option<CylheimLevelMetaConfig>,
+    pub level_meta_config: Option<CylheimLevelMetaConfig>,
 }
 fn default_cyl_version() -> isize {
     0
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct ChartInfo {
+pub struct ChartInfo {
     #[serde(rename = "DiffName")]
-    diff_name: String,
+    pub diff_name: String,
     #[serde(rename = "Diff")]
-    diff_value: String,
+    pub diff_value: String,
     #[serde(rename = "FileName")]
-    chart_path: String,
+    pub chart_path: String,
     #[serde(rename = "Media")]
-    song_path: String,
+    pub song_path: String,
     #[serde(rename = "Video")]
-    video_path: String,
+    pub video_path: String,
     #[serde(rename = "Bg")]
-    background_path: String,
+    pub background_path: String,
     #[serde(rename = "Icon")]
-    icon_path: String,
+    pub icon_path: String,
     #[serde(rename = "SongName")]
-    song_name: String,
+    pub song_name: String,
     #[serde(rename = "ThemeColor")]
-    theme_color: String,
+    pub theme_color: String,
     #[serde(rename = "DiffTextColor")]
-    diff_text_color: String,
+    pub diff_text_color: String,
     #[serde(rename = "DiffBgColor")]
-    diff_background_color: String,
+    pub diff_background_color: String,
     #[serde(rename = "StoryboardPath")]
-    storyboard_path: Option<String>,
+    pub storyboard_path: Option<String>,
     #[serde(rename = "Bookmarks")]
-    bookmark: Vec<CylheimBookmark>,
+    pub bookmark: Vec<CylheimBookmark>,
     #[serde(rename = "GenerateEventConfig", default)]
-    generate_event_config: GenerateEventConfig,
+    pub generate_event_config: GenerateEventConfig,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct CylheimBookmark {
+pub struct CylheimBookmark {
     #[serde(rename = "Tick")]
     tick: usize,
     #[serde(rename = "Tag")]
     tag: String,
 }
 #[derive(Serialize, Deserialize, Debug)]
-struct GenerateEventConfig {
+pub struct GenerateEventConfig {
     #[serde(rename = "IgnoreFrom")]
     ignore_from: f64,
     #[serde(rename = "IgnoreTo")]

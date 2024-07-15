@@ -30,7 +30,7 @@ pub enum CylheimThemeColor {
 }
 impl CylheimThemeColor {
     #[allow(unused)]
-    fn get_color(&self) -> &str {
+    pub fn get_color(&self) -> &str {
         match self {
             CylheimThemeColor::Paff => "#FF5BC098",
             CylheimThemeColor::NekoTheElder => "#FFC481A2",
@@ -73,43 +73,43 @@ pub enum CylheimDiffOption {
 #[derive(Clone)]
 #[allow(unused)]
 pub struct CylheimDiffMeta {
-    diff_name: String,
-    diff_text_color: String,
-    diff_background_color: String,
+    pub diff_name: String,
+    pub diff_background_color: String,
+    pub diff_text_color: String,
 }
 impl CylheimDiffOption {
     #[allow(unused)]
-    fn get_meta(&self) -> CylheimDiffMeta {
+    pub fn get_meta(&self) -> CylheimDiffMeta {
         match self {
             CylheimDiffOption::EASY => CylheimDiffMeta {
                 diff_name: "EASY".to_string(),
-                diff_text_color: "#FF003366".to_string(),
-                diff_background_color: "#B333CCFF".to_string(),
+                diff_background_color: "#FF003366".to_string(),
+                diff_text_color: "#B333CCFF".to_string(),
             },
             CylheimDiffOption::HARD => CylheimDiffMeta {
                 diff_name: "HARD".to_string(),
-                diff_text_color: "#FF330000".to_string(),
-                diff_background_color: "#B3FF3333".to_string(),
+                diff_background_color: "#FF330000".to_string(),
+                diff_text_color: "#B3FF3333".to_string(),
             },
             CylheimDiffOption::CHAOS => CylheimDiffMeta {
                 diff_name: "CHAOS".to_string(),
-                diff_text_color: "#FF330033".to_string(),
-                diff_background_color: "#B3FF33FF".to_string(),
+                diff_background_color: "#FF330033".to_string(),
+                diff_text_color: "#B3FF33FF".to_string(),
             },
             CylheimDiffOption::GLITCH => CylheimDiffMeta {
                 diff_name: "GLITCH".to_string(),
-                diff_text_color: "#FF002E1D".to_string(),
-                diff_background_color: "#B300A96B".to_string(),
+                diff_background_color: "#FF002E1D".to_string(),
+                diff_text_color: "#B300A96B".to_string(),
             },
             CylheimDiffOption::CRASH => CylheimDiffMeta {
                 diff_name: "CRASH".to_string(),
-                diff_text_color: "#FF452E13".to_string(),
-                diff_background_color: "#B3FFC000".to_string(),
+                diff_background_color: "#FF452E13".to_string(),
+                diff_text_color: "#B3FFC000".to_string(),
             },
             CylheimDiffOption::DREAM => CylheimDiffMeta {
                 diff_name: "DREAM".to_string(),
-                diff_text_color: "#FF3E3E3E".to_string(),
-                diff_background_color: "#B3FFFFFF".to_string(),
+                diff_background_color: "#FF3E3E3E".to_string(),
+                diff_text_color: "#B3FFFFFF".to_string(),
             },
             CylheimDiffOption::Custom(custom_meta) => custom_meta.clone(),
         }
@@ -146,7 +146,7 @@ pub enum CylheimThemeIcon {
 }
 impl CylheimThemeIcon {
     #[allow(unused)]
-    fn get_icon_path(&self) -> &str {
+    pub fn get_icon_path(&self) -> &str {
         match self {
             CylheimThemeIcon::Paff => "cyl://cyicons/paff001",
             CylheimThemeIcon::NekoTheElder => "cyl://cyicons/neko001",

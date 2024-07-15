@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "cyl_package_maker"
+name = "cyl_package_tool"
 version = "0.1.0"
 dependencies = [
  "serde",
