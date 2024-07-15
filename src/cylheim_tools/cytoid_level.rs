@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CylheimLevelMetaConfig {
-    schema_version: usize,
-    version: usize,
+    schema_version: u32,
+    version: u32,
     id: String,
     title: String,
     title_localized: String,
@@ -42,8 +42,8 @@ struct CylheimLevelChartConfig {
 #[allow(unused)]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CytoidLevelMetaConfig {
-    schema_version: usize,
-    version: usize,
+    schema_version: u32,
+    version: u32,
     id: String,
     title: String,
     title_localized: String,

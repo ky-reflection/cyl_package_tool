@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CylheimProjectConfig {
     #[serde(rename = "Version", default = "default_cyl_version")]
-    pub version: isize,
+    pub version: i32,
     #[serde(rename = "ChartInfos")]
     pub chart_infos: Vec<ChartInfo>,
     #[serde(rename = "LastOpenedChart")]
@@ -13,7 +13,7 @@ pub struct CylheimProjectConfig {
     #[serde(rename = "LevelMetaConfig")]
     pub level_meta_config: Option<CylheimLevelMetaConfig>,
 }
-fn default_cyl_version() -> isize {
+fn default_cyl_version() -> i32 {
     0
 }
 #[derive(Serialize, Deserialize, Debug)]
@@ -50,7 +50,7 @@ pub struct ChartInfo {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CylheimBookmark {
     #[serde(rename = "Tick")]
-    tick: usize,
+    tick: u32,
     #[serde(rename = "Tag")]
     tag: String,
 }
@@ -61,13 +61,13 @@ pub struct GenerateEventConfig {
     #[serde(rename = "IgnoreTo")]
     ignore_to: f64,
     #[serde(rename = "IgnoreSameTypeInterval")]
-    ignore_same_type_interval: usize,
+    ignore_same_type_interval: u32,
     #[serde(rename = "UseLastEventAsRef")]
     use_last_event_as_ref: bool,
     #[serde(rename = "IgnorePosFunc")]
     ignore_pos_func: bool,
     #[serde(rename = "BaseTicks")]
-    base_ticks: Option<Vec<usize>>,
+    base_ticks: Option<Vec<u32>>,
 }
 impl Default for GenerateEventConfig {
     fn default() -> Self {
