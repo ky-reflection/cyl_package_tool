@@ -46,14 +46,20 @@ pub struct CytoidLevelMetaConfig {
     version: u32,
     id: String,
     title: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     title_localized: Option<String>,
     artist: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     artist_localized: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     artist_source: Option<String>,
     illustrator: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     illustrator_localized: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     illustrator_source: Option<String>,
     charter: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     storyboarder: Option<String>,
     music: LevelFilePathConfig,
     music_preview: LevelFilePathConfig,
@@ -68,6 +74,8 @@ struct CytoidLevelChartConfig {
     name: String,
     difficulty: f64,
     path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     music_override: Option<LevelFilePathConfig>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     storyboard: Option<LevelFilePathConfig>,
 }

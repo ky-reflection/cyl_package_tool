@@ -67,6 +67,7 @@ pub struct GenerateEventConfig {
     #[serde(rename = "IgnorePosFunc")]
     ignore_pos_func: bool,
     #[serde(rename = "BaseTicks")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     base_ticks: Option<Vec<u32>>,
 }
 impl Default for GenerateEventConfig {

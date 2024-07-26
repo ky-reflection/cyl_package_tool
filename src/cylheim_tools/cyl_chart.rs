@@ -5,6 +5,7 @@ pub struct CylheimChart {
     format_version: u32,
     time_base: u32,
     start_offset_time: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
     end_offset_time: Option<f64>,
     is_start_without_ui: Option<bool>,
     page_list: Vec<CylheimChartPage>,
@@ -19,6 +20,7 @@ struct CylheimChartPage {
     end_tick: u32,
     scan_line_direction: i32,
     #[serde(rename = "PositionFunction")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     position_function: Option<CylheimChartPagePositionFunction>,
 }
 #[derive(Serialize, Deserialize, Debug)]
@@ -63,6 +65,8 @@ struct CylheimChartNote {
     next_id: i32,
     is_forward: bool,
     #[serde(rename = "NoteDirection")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     falling_note_direction: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     approach_rate: Option<f64>,
 }

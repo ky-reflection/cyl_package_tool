@@ -1,0 +1,281 @@
+{
+  "Version": 0,
+  "ChartInfos": [
+    {
+      "DiffName": "CHAOS",
+      "Diff": "",
+      "FileName": "ky_dirge_in_magenta.json",
+      "Media": "song\\Dirge in Magenta.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\bg_dirge_in_magenta.jpeg",
+      "Icon": "cyl://cyicons/joe001",
+      "SongName": "Dirge in Magenta",
+      "ThemeColor": "#FF644671",
+      "DiffTextColor": "#B3FF33FF",
+      "DiffBgColor": "#FF330033",
+      "StoryboardPath": null,
+      "Bookmarks": [
+        {
+          "Tick": 84480,
+          "Tag": "书签 1"
+        },
+        {
+          "Tick": 165120,
+          "Tag": "书签 2"
+        }
+      ],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": []
+      }
+    },
+    {
+      "DiffName": "CHAOS",
+      "Diff": "13",
+      "FileName": "ky_dirge_in_magenta2.json",
+      "Media": "song\\Dirge in Magenta.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\bg_dirge_in_magenta.jpeg",
+      "Icon": "cyl://cyicons/joe001",
+      "SongName": "Dirge in Magenta",
+      "ThemeColor": "#FF644671",
+      "DiffTextColor": "#B3FF33FF",
+      "DiffBgColor": "#FF330033",
+      "StoryboardPath": null,
+      "Bookmarks": [],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": []
+      }
+    },
+    {
+      "DiffName": "CHAOS",
+      "Diff": "",
+      "FileName": "ky_pepino.json",
+      "Media": "song\\Pepino.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\bg_pepino.png",
+      "Icon": "cyl://cyicons/robo001",
+      "SongName": "Pepino",
+      "ThemeColor": "#FF84B6BF",
+      "DiffTextColor": "#B3FF33FF",
+      "DiffBgColor": "#FF330033",
+      "StoryboardPath": null,
+      "Bookmarks": [],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": null
+      }
+    },
+    {
+      "DiffName": "CHAOS",
+      "Diff": "",
+      "FileName": "ky_gyaku.json",
+      "Media": "song\\Gyaku.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\bg_gyaku_paff.png",
+      "Icon": "cyl://cyicons/paff002",
+      "SongName": "逆_",
+      "ThemeColor": "#FF5BC098",
+      "DiffTextColor": "#B3FF33FF",
+      "DiffBgColor": "#FF330033",
+      "StoryboardPath": null,
+      "Bookmarks": [],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": null
+      }
+    },
+    {
+      "DiffName": "CHAOS",
+      "Diff": "",
+      "FileName": "ky_yume_enishi.json",
+      "Media": "song\\夢縁.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\bg_yume_enishi.png",
+      "Icon": "cyl://cyicons/rin001",
+      "SongName": "夢縁",
+      "ThemeColor": "#FF83AC36",
+      "DiffTextColor": "#B3FF33FF",
+      "DiffBgColor": "#FF330033",
+      "StoryboardPath": null,
+      "Bookmarks": [],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": null
+      }
+    },
+    {
+      "DiffName": "CHAOS",
+      "Diff": "",
+      "FileName": "ky_umito_yamato_sorato.json",
+      "Media": "song\\海と、山と、空と、、、.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\bg_umito_yamato_sorato.png",
+      "Icon": "cyl://cyicons/ivy001",
+      "SongName": "海と、山と、空と、、、",
+      "ThemeColor": "#FFBA1E1E",
+      "DiffTextColor": "#B3FF33FF",
+      "DiffBgColor": "#FF330033",
+      "StoryboardPath": null,
+      "Bookmarks": [],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": []
+      }
+    },
+    {
+      "DiffName": "CHAOS",
+      "Diff": "",
+      "FileName": "ky_inherited_world.json",
+      "Media": "song\\inherited_world.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\bg_inherited_world.png",
+      "Icon": "cyl://cyicons/conner001",
+      "SongName": "Inherited World",
+      "ThemeColor": "#FFCD8145",
+      "DiffTextColor": "#B3FF33FF",
+      "DiffBgColor": "#FF330033",
+      "StoryboardPath": null,
+      "Bookmarks": [],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": null
+      }
+    },
+    {
+      "DiffName": "CHAOS",
+      "Diff": "",
+      "FileName": "ky_memory_of_azure.json",
+      "Media": "song\\Memory of Azure.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\background_h_orig.png",
+      "Icon": "cyl://cyicons/neko001",
+      "SongName": "Memory of Azure",
+      "ThemeColor": "#FFC481A2",
+      "DiffTextColor": "#B3FF33FF",
+      "DiffBgColor": "#FF330033",
+      "StoryboardPath": null,
+      "Bookmarks": [],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": null
+      }
+    },
+    {
+      "DiffName": "CHAOS",
+      "Diff": "",
+      "FileName": "ky_ryuusa_no_arashi2.json",
+      "Media": "song\\流砂の岚.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\bg_ryuusa_no_arashi.png",
+      "Icon": "cyl://cyicons/sagar001",
+      "SongName": "流砂の嵐",
+      "ThemeColor": "#FFB78548",
+      "DiffTextColor": "#B3FF33FF",
+      "DiffBgColor": "#FF330033",
+      "StoryboardPath": null,
+      "Bookmarks": [],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": null
+      }
+    },
+    {
+      "DiffName": "EASY",
+      "Diff": "1",
+      "FileName": "..\\..\\..\\..\\..\\.C\\Download\\26e359e8-3860-3b1d-91b6-acca57d8ea88.txt",
+      "Media": "song\\inherited_world.ogg",
+      "Video": "Video.mp4",
+      "Bg": "bg\\bg_inherited_world.png",
+      "Icon": "cyl://cyicons/conner001",
+      "SongName": "Inherited World",
+      "ThemeColor": "#FFCD8145",
+      "DiffTextColor": "#B333CCFF",
+      "DiffBgColor": "#FF003366",
+      "StoryboardPath": null,
+      "Bookmarks": [],
+      "GenerateEventConfig": {
+        "IgnoreFrom": 0.8,
+        "IgnoreTo": 1.25,
+        "IgnoreSameTypeInterval": 480,
+        "UseLastEventAsRef": false,
+        "IgnorePosFunc": false,
+        "BaseTicks": null
+      }
+    }
+  ],
+  "LastOpenedChart": "..\\..\\..\\..\\..\\.C\\Download\\26e359e8-3860-3b1d-91b6-acca57d8ea88.txt",
+  "LastEditedTime": 53639.9285,
+  "LevelMetaConfig": {
+    "schema_version": 2,
+    "version": 2,
+    "id": "kyr.ryuusa_no_arashi",
+    "title": "流砂の嵐",
+    "title_localized": "",
+    "artist": "劇団レコード",
+    "artist_localized": "",
+    "artist_source": "",
+    "illustrator": "符号",
+    "illustrator_localized": "",
+    "illustrator_source": "",
+    "charter": "KY_Reflection",
+    "storyboarder": "",
+    "music": {
+      "path": "song\\流砂の岚.ogg"
+    },
+    "music_preview": {
+      "path": "song\\流砂の岚.ogg"
+    },
+    "background": {
+      "path": "bg_ryuusa_no_arashi.png"
+    },
+    "charts": [
+      {
+        "type": "extreme",
+        "name": "CHAOS",
+        "difficulty": 12,
+        "path": "ky_ryuusa_no_arashi2.json",
+        "GenerateNewFeaturesToStoryboard": true,
+        "VideoPath": ""
+      }
+    ],
+    "SavePath": ""
+  }
+}
