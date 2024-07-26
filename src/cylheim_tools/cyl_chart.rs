@@ -63,6 +63,6 @@ struct CylheimChartNote {
     next_id: i32,
     is_forward: bool,
     #[serde(rename = "NoteDirection")]
-    note_direction: Option<u32>,
+    falling_note_direction: Option<u32>,
     approach_rate: Option<f64>,
 }
