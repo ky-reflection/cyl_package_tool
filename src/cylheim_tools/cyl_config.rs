@@ -7,10 +7,12 @@ pub struct CylheimProjectConfig {
     #[serde(rename = "ChartInfos")]
     pub chart_infos: Vec<ChartInfo>,
     #[serde(rename = "LastOpenedChart")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub last_open_chart: Option<String>,
     #[serde(rename = "LastEditedTime")]
     pub last_edit_time: f64,
     #[serde(rename = "LevelMetaConfig")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub level_meta_config: Option<CylheimLevelMetaConfig>,
 }
 fn default_cyl_version() -> i32 {
@@ -41,6 +43,7 @@ pub struct ChartInfo {
     #[serde(rename = "DiffBgColor")]
     pub diff_background_color: String,
     #[serde(rename = "StoryboardPath")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub storyboard_path: Option<String>,
     #[serde(rename = "Bookmarks")]
     pub bookmark: Vec<CylheimBookmark>,

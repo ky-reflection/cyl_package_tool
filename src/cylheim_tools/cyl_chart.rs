@@ -7,6 +7,7 @@ pub struct CylheimChart {
     start_offset_time: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     end_offset_time: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     is_start_without_ui: Option<bool>,
     page_list: Vec<CylheimChartPage>,
     tempo_list: Vec<CylheimChartTempo>,

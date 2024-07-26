@@ -13,5 +13,7 @@ fn test_cylheim_chart() {
     let path = "./tests/resources/test_cyl_chart.json";
     let f = fs::read_to_string(path).unwrap();
     let config: CylheimChart = serde_json::from_str(&f).unwrap();
-    println!("{:?}", config);
+    println!("{:?}", &config);
+    let config_json = serde_json::to_string(&config).unwrap();
+    println!("{:?}", &config_json);
 }
