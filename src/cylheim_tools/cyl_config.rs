@@ -87,8 +87,8 @@ impl Default for GenerateEventConfig {
 }
 
 impl CylheimProjectConfig {
-    #[allow(unused)]
-    fn sort_bookmarks_by_tick(&mut self) {
+    #[allow(dead_code)]
+    pub fn sort_bookmarks_by_tick(&mut self) {
         for chart_info in &mut self.chart_infos {
             chart_info.bookmark.sort_by_key(|bookmark| bookmark.tick);
         }
