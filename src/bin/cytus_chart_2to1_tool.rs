@@ -1,5 +1,7 @@
+#![windows_subsystem = "windows"]
+
 use cyl_package_tool::cylheim_tools::CylheimChart;
-use eframe::egui::{self, CentralPanel, Label, Layout, RichText};
+use eframe::egui::{self, CentralPanel, RichText};
 use rfd::FileDialog;
 use std::{
     fs::{self, File},
@@ -39,23 +41,37 @@ impl eframe::App for MyApp {
 
                 if ui.button("Select File").clicked() {
                     if let Some(path) = FileDialog::new().pick_file() {
-                        let f = fs::read_to_string(&path).unwrap();
-                        let cylchart: CylheimChart = serde_json::from_str(&f).unwrap();
-                        match cylchart.to_cytus1_chart_with_pageshift(false) {
-                            Ok(chart) => {
-                                self.selected_file = Some(path.clone());
-                                let new_file_path =
-                                    save_new_file(&path, &chart.to_string(), "converted", "txt")
+                        if let Ok(f) = fs::read_to_string(&path) {
+                            let result: Result<CylheimChart, _> = serde_json::from_str(&f);
+                            if let Ok(cylchart) = result {
+                                match cylchart.to_cytus1_chart_with_pageshift(false) {
+                                    Ok(chart) => {
+                                        self.selected_file = Some(path.clone());
+                                        let new_file_path = save_new_file(
+                                            &path,
+                                            &chart.to_string(),
+                                            "converted",
+                                            "txt",
+                                        )
                                         .unwrap();
-                                self.message = format!(
-                                    "File processed successfully: {:?}",
-                                    new_file_path.file_name().unwrap()
-                                );
-                            }
-                            Err(err) => {
+                                        self.message = format!(
+                                            "File processed successfully: {:?}",
+                                            new_file_path.file_name().unwrap()
+                                        );
+                                    }
+                                    Err(err) => {
+                                        self.selected_file = Some(path.clone());
+                                        self.message = format!("Error processing file: {:?}", err);
+                                    }
+                                }
+                            } else {
                                 self.selected_file = Some(path.clone());
-                                self.message = format!("Error processing file: {:?}", err);
+                                self.message =
+                                    format!("File you selected is not a valid Cytus2 chart.");
                             }
+                        } else {
+                            self.selected_file = Some(path.clone());
+                            self.message = format!("File you selected is not a text file.");
                         }
                     }
                 }

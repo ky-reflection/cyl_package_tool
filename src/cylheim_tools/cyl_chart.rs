@@ -172,7 +172,7 @@ impl CylheimChart {
             .into_iter()
             .map(|note| (note.id, note))
             .collect();
-        let page_map: HashMap<u32, CylheimChartPage> = self
+        let _page_map: HashMap<u32, CylheimChartPage> = self
             .page_list
             .clone()
             .into_iter()
