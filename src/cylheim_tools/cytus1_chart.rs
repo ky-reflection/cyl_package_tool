@@ -1,37 +1,84 @@
+use super::utils::CylToolError;
+use super::CylheimChart;
+use getset::{Getters, MutGetters, Setters};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
+use std::result::Result;
 use std::{fmt, str::FromStr};
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct Cytus1Chart {
+#[derive(Serialize, Deserialize, Debug, Clone, Getters, Setters)]
+
+pub struct Cytus1Chart {
+    #[getset(get = "pub", set = "pub")]
     version: u32,
+    #[getset(get = "pub", set = "pub")]
     bpm: f64,
+    #[getset(get = "pub", set = "pub")]
     page_shift: f64,
+    #[getset(get = "pub", set = "pub")]
     page_size: f64,
+    #[getset(get = "pub", set = "pub")]
     notes: Vec<Cytus1ChartNote>,
+    #[getset(get = "pub", set = "pub")]
     links: Vec<Cytus1ChartLink>,
 }
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct Cytus1ChartNote {
+#[derive(Serialize, Deserialize, Debug, Clone, Getters, Setters)]
+
+pub struct Cytus1ChartNote {
+    #[getset(get = "pub", set = "pub")]
     id: u32,
+    #[getset(get = "pub", set = "pub")]
     time: f64,
+    #[getset(get = "pub", set = "pub")]
     x: f64,
+    #[getset(get = "pub", set = "pub")]
     hold_length: f64,
 }
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct Cytus1ChartLink {
+#[derive(Serialize, Deserialize, Debug, Clone, Getters, Setters, MutGetters)]
+
+pub struct Cytus1ChartLink {
+    #[getset(get = "pub", set = "pub", get_mut = "pub")]
     link: Vec<u32>,
+}
+
+impl Default for Cytus1Chart {
+    fn default() -> Self {
+        Self {
+            version: 2,
+            bpm: 0.0,
+            page_shift: 0.0,
+            page_size: 0.0,
+            notes: Vec::new(),
+            links: Vec::new(),
+        }
+    }
+}
+impl Cytus1ChartNote {
+    pub fn new(id: u32, time: f64, x: f64, hold_length: f64) -> Self {
+        Self {
+            id,
+            time,
+            x,
+            hold_length,
+        }
+    }
+}
+impl Default for Cytus1ChartLink {
+    fn default() -> Self {
+        Self { link: Vec::new() }
+    }
 }
 impl fmt::Display for Cytus1Chart {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "VERSION {}\n", self.version)?;
-        write!(f, "BPM {:.6}\n", self.bpm)?;
-        write!(f, "PAGE_SHIFT {:.6}\n", self.page_shift)?;
-        write!(f, "PAGE_SIZE {:.6}\n", self.page_size)?;
+        writeln!(f, "VERSION {}", self.version)?;
+        writeln!(f, "BPM {:.6}", self.bpm)?;
+        writeln!(f, "PAGE_SHIFT {:.6}", self.page_shift)?;
+        writeln!(f, "PAGE_SIZE {:.6}", self.page_size)?;
         for note in &self.notes {
-            write!(f, "{}\n", note)?;
+            writeln!(f, "{}", note)?;
         }
         for link in &self.links {
-            write!(f, "{}\n", link)?;
+            writeln!(f, "{}", link)?;
         }
         Ok(())
     }
@@ -131,6 +178,24 @@ impl FromStr for Cytus1Chart {
             links,
         })
     }
+}
+
+impl Cytus1Chart {
+    #[allow(dead_code)]
+    fn into_c2chart(&self) -> Result<CylheimChart, CylToolError> {
+        Err(CylToolError::from("error"))
+    }
+}
+pub fn compare_links(a: &Cytus1ChartLink, b: &Cytus1ChartLink) -> Ordering {
+    let len: usize = a.link.len().min(b.link.len());
+    for i in 0..len {
+        match a.link[i].cmp(&b.link[i]) {
+            Ordering::Equal => continue,
+            non_eq => return non_eq,
+        }
+    }
+    // 如果所有比较的 `id` 都相等，比较 `ids` 向量的长度
+    a.link.len().cmp(&b.link.len())
 }
 #[cfg(test)]
 mod test {

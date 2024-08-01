@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+getset = "0.1.2"
 rand = "0.8.5"
 regex = "1.10.5"
 serde = { version = "1.0.204", features = ["derive"] }
