@@ -1,16 +1,12 @@
-use std::{
-    any::Any,
-    borrow::BorrowMut,
-    collections::{HashMap, HashSet},
-};
+use std::collections::{HashMap, HashSet};
 
 use super::{
     cytus1_chart::{compare_links, Cytus1Chart, Cytus1ChartLink, Cytus1ChartNote},
     utils::CylToolError,
 };
-use getset::{Getters, Setters};
+use getset::{Getters, MutGetters, Setters};
 use serde::{Deserialize, Serialize};
-#[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone)]
+#[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone, MutGetters)]
 #[allow(unused)]
 pub struct CylheimChart {
     #[getset(get = "pub", set = "pub")]
@@ -26,13 +22,13 @@ pub struct CylheimChart {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[getset(get = "pub", set = "pub")]
     is_start_without_ui: Option<bool>,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub", set = "pub", get_mut = "pub")]
     page_list: Vec<CylheimChartPage>,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub", set = "pub", get_mut = "pub")]
     tempo_list: Vec<CylheimChartTempo>,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub", set = "pub", get_mut = "pub")]
     event_order_list: Vec<CylheimChartTickEventList>,
-    #[getset(get = "pub", set = "pub")]
+    #[getset(get = "pub", set = "pub", get_mut = "pub")]
     note_list: Vec<CylheimChartNote>,
 }
 #[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone)]
@@ -120,24 +116,9 @@ struct CylheimChartNote {
     #[serde(skip_serializing_if = "Option::is_none")]
     approach_rate: Option<f64>,
 }
+#[allow(dead_code)]
 enum InsertNoteOption {}
 impl CylheimChart {
-    // fn to_cytus1_chart_check(&self) -> Result<(), CylToolError> {
-    //     let check_note_type = |note_type: u32| match note_type {
-    //         0 | 1 | 3 | 4 => true,
-    //         _ => false,
-    //     };
-    //     for note in &self.note_list {
-    //         if !check_note_type(note.note_type) {
-    //             return Err(CylToolError::from(format!(
-    //                 "Note {} have an invalid type {}.",
-    //                 note.id, note.note_type
-    //             )));
-    //         }
-    //     }
-
-    //     Ok(todo!())
-    // }
     #[allow(dead_code)]
     fn to_cytus1_chart_directly(
         &self,
@@ -247,16 +228,80 @@ impl CylheimChart {
         target_chart.set_links(c1_link_vec);
         Ok(target_chart)
     }
+    #[allow(dead_code)]
+    fn to_cytus1_chart_with_flag(&self) -> Result<Cytus1Chart, CylToolError> {
+        let get_tick_time_second = |tempo: u32, time_base: u32, tick: u32| {
+            tick as f64 / time_base as f64 * tempo as f64 / 1000.0 / 1000.0
+        };
+        let mut current_chart = self.clone();
+        let mut cytus1_flag_check = false;
+        if let Some(cytus1_flag) = current_chart.event_order_list.get(0) {
+            if current_chart.event_order_list.len() == 1
+                && cytus1_flag.tick == 0
+                && cytus1_flag.event_list.len() == 1
+            {
+                if let Some(cytus1_flag_event) = cytus1_flag.event_list.get(0) {
+                    if cytus1_flag_event.event_args.contains("#DEFINE CYTUS1") {
+                        cytus1_flag_check = true;
+                    }
+                }
+            }
+        }
+        if !cytus1_flag_check {
+            return Err(CylToolError::from(format!("Cannot find cytus1_flag.")));
+        }
+        let mut cytus1_tempo_check = false;
+        if let Some(zero_tempo) = current_chart.tempo_list.get(0) {
+            if let Some(true_tempo) = current_chart.tempo_list.get(1) {
+                if let Some(first_page) = current_chart.page_list.get(0) {
+                    if zero_tempo.tick == 0
+                        && zero_tempo.value == 0
+                        && true_tempo.tick - zero_tempo.tick > 0
+                        && true_tempo.tick - zero_tempo.tick < 2 * first_page.get_page_size() as u32
+                        && first_page.scan_line_direction == 1
+                        && current_chart.tempo_list.len() == 2
+                    {
+                        cytus1_tempo_check = true;
+                    }
+                }
+            }
+        }
+        if !cytus1_tempo_check {
+            return Err(CylToolError::from(format!("Invalid tempo.")));
+        }
+        let time_base = current_chart.time_base;
+        let true_tempo = current_chart.tempo_list.get(1).unwrap().clone();
+        let page_shift = get_tick_time_second(true_tempo.value, time_base, true_tempo.tick);
+        current_chart.event_order_list_mut().clear();
+        current_chart.tempo_list_mut().clear();
+        current_chart.tempo_list_mut().push(CylheimChartTempo {
+            tick: 0,
+            value: true_tempo.value,
+        });
+        for note in current_chart.note_list_mut() {
+            note.set_tick(note.tick - true_tempo.tick);
+        }
+        let target = current_chart.to_cytus1_chart_directly(Some(page_shift));
+        target
+    }
 }
 #[cfg(test)]
 mod test {
     use super::*;
     use std::fs;
+    const TEST_RESOURCE_ROOT: &str = "./tests/resources/";
+    const TEST_OUTPUT_ROOT: &str = "./tests/output/";
+    fn get_resource_path(filename: &str) -> String {
+        TEST_RESOURCE_ROOT.to_owned() + filename
+    }
+    fn get_output_path(filename: &str) -> String {
+        TEST_OUTPUT_ROOT.to_owned() + filename
+    }
     #[test]
     fn test_cytus2to1() {
-        let path1 = "./tests/resources/test_valid_c2to1_chart.json";
-        let path2 = "./tests/resources/test_cyl_chart.json";
-        let path3 = "./tests/resources/test_c1.txt";
+        let path1 = get_resource_path("test_valid_c2to1_chart.json");
+        let path2 = get_resource_path("test_cyl_chart.json");
+        let path3 = get_output_path("test_c1.txt");
         let f1 = fs::read_to_string(path1).unwrap();
         let f2 = fs::read_to_string(path2).unwrap();
         let chart1: CylheimChart = serde_json::from_str(&f1).unwrap();
@@ -265,5 +310,15 @@ mod test {
         // let chart_test2 = chart2.to_cytus1_chart(None).unwrap();
         println!("{}", chart_test1);
         fs::write(path3, chart_test1.to_string()).unwrap();
+    }
+    #[test]
+    fn test_cytus2to1_with_flag() {
+        let path = get_resource_path("cylchart_with_cytus1_flag.json");
+        let path_out = get_output_path("cylchart_with_cytus1_flag_converted.txt");
+        let f = fs::read_to_string(path).unwrap();
+        let cylchart: CylheimChart = serde_json::from_str(&f).unwrap();
+        let cytus1chart = cylchart.to_cytus1_chart_with_flag().unwrap();
+        println!("{}", cytus1chart);
+        fs::write(path_out, cytus1chart.to_string()).unwrap();
     }
 }
