@@ -1,3 +1,4 @@
 /target
 /resource
 /tests/output/*
+/*.py
