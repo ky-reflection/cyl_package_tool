@@ -9,7 +9,10 @@ use std::{
     path::{Path, PathBuf},
 };
 fn main() -> Result<(), eframe::Error> {
-    let options = eframe::NativeOptions::default();
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([600.0, 450.0]),
+        ..Default::default()
+    };
     eframe::run_native(
         "Cytus Chart 2 to 1 Converter",
         options,
