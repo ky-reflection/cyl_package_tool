@@ -38,9 +38,11 @@ impl eframe::App for MyApp {
                 ui.add_space(15.0);
                 ui.heading("Cytus Chart 2 to 1 Converter");
                 ui.add_space(15.0);
-
                 if ui.button("Select File").clicked() {
-                    if let Some(path) = FileDialog::new().pick_file() {
+                    if let Some(path) = FileDialog::new()
+                        .add_filter("text", &["txt", "json"])
+                        .pick_file()
+                    {
                         if let Ok(f) = fs::read_to_string(&path) {
                             let result: Result<CylheimChart, _> = serde_json::from_str(&f);
                             if let Ok(cylchart) = result {
