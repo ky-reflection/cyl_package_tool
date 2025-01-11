@@ -33,7 +33,7 @@ pub struct CylheimChart {
 }
 #[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone)]
 #[allow(unused)]
-struct CylheimChartPage {
+pub(crate) struct CylheimChartPage {
     #[getset(get = "pub", set = "pub")]
     start_tick: u32,
     #[getset(get = "pub", set = "pub")]
@@ -52,7 +52,7 @@ impl CylheimChartPage {
 }
 #[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone)]
 #[allow(unused)]
-struct CylheimChartPagePositionFunction {
+pub(crate) struct CylheimChartPagePositionFunction {
     #[serde(rename = "Type")]
     #[getset(get = "pub", set = "pub")]
     position_function_type: u32,
@@ -62,7 +62,7 @@ struct CylheimChartPagePositionFunction {
 }
 #[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone)]
 #[allow(unused)]
-struct CylheimChartTempo {
+pub(crate) struct CylheimChartTempo {
     #[getset(get = "pub", set = "pub")]
     tick: u32,
     #[getset(get = "pub", set = "pub")]
@@ -70,7 +70,7 @@ struct CylheimChartTempo {
 }
 #[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone)]
 #[allow(unused)]
-struct CylheimChartTickEventList {
+pub(crate) struct CylheimChartTickEventList {
     #[getset(get = "pub", set = "pub")]
     tick: u32,
     #[getset(get = "pub", set = "pub")]
@@ -78,7 +78,7 @@ struct CylheimChartTickEventList {
 }
 #[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone)]
 #[allow(unused)]
-struct CylheimChartEvent {
+pub(crate) struct CylheimChartEvent {
     #[serde(rename = "type")]
     #[getset(get = "pub", set = "pub")]
     event_type: u32,
@@ -88,7 +88,7 @@ struct CylheimChartEvent {
 }
 #[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone)]
 #[allow(unused)]
-struct CylheimChartNote {
+pub(crate) struct CylheimChartNote {
     #[getset(get = "pub", set = "pub")]
     page_index: u32,
     #[serde(rename = "type")]
@@ -317,6 +317,7 @@ mod test {
         TEST_OUTPUT_ROOT.to_owned() + filename
     }
     #[test]
+    #[allow(unused)]
     fn test_cytus2to1() {
         let path1 = get_resource_path("test_valid_c2to1_chart.json");
         let path2 = get_resource_path("test_cyl_chart.json");

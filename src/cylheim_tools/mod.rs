@@ -1,3 +1,4 @@
+pub mod chart_viewer;
 pub mod cyl_chart;
 pub mod cyl_config;
 pub mod cyl_theme;
