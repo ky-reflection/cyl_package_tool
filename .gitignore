@@ -2,3 +2,4 @@
 /resource
 /tests/output/*
 /*.py
+/tmp
