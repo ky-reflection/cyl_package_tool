@@ -17,5 +17,5 @@ toml = "0.8.16"
 walkdir = "2.5.0"
 
 [[bin]]
-name = "c2to1_converter"
-path = "src/bin/cytus_chart_2to1_tool.rs"
+name = "toolkit"
+path = "src/bin/cytus_toolkit.rs"
