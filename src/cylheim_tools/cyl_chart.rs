@@ -41,7 +41,6 @@ pub(crate) struct CylheimChartPage {
     #[getset(get = "pub", set = "pub")]
     scan_line_direction: i32,
     #[getset(get = "pub", set = "pub")]
-    #[getset(get = "pub", set = "pub")]
     #[serde(rename = "PositionFunction", skip_serializing_if = "Option::is_none")]
     position_function: Option<CylheimChartPagePositionFunction>,
 }
@@ -302,6 +301,26 @@ impl CylheimChart {
         }
         let target = current_chart.to_cytus1_chart_directly(Some(page_shift));
         target
+    }
+    #[allow(dead_code)]
+    pub fn sort_internal_data(&mut self) {
+        self.page_list.sort_by_key(|page| page.start_tick);
+        self.tempo_list.sort_by_key(|tempo| tempo.tick);
+        self.event_order_list
+            .sort_by_key(|event_list| event_list.tick);
+        self.note_list.sort_by_key(|note| (note.tick, note.id));
+        for event_list in &mut self.event_order_list {
+            event_list
+                .event_list
+                .sort_by_key(|event| (event.event_type, event.event_args.clone()));
+        }
+    }
+    #[allow(dead_code)]
+    pub fn sort_and_reassign_note_ids(&mut self) {
+        self.note_list.sort_by_key(|note| note.tick);
+        for (new_id, note) in self.note_list.iter_mut().enumerate() {
+            note.id = new_id as u32;
+        }
     }
 }
 #[cfg(test)]
