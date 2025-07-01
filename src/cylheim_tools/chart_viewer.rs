@@ -1,14 +1,7 @@
-use std::{
-    cmp::{max, min},
-    collections::HashMap,
-    result,
-};
+use std::{cmp::min, collections::HashMap};
 
 use super::{
-    cyl_chart::{
-        CylheimChart, CylheimChartNote, CylheimChartPage, CylheimChartPagePositionFunction,
-        CylheimChartTempo,
-    },
+    cyl_chart::{CylheimChart, CylheimChartPagePositionFunction, CylheimChartTempo},
     utils::CylToolError,
 };
 use getset::{Getters, MutGetters, Setters};
@@ -234,6 +227,7 @@ impl Default for CylheimChartPageViewerScanlineEventType {
 #[allow(dead_code)]
 pub(crate) fn build_cylheim_chart_viewer(
     chart: CylheimChart,
+    labels: Option<HashMap<u32, HashMap<String, String>>>,
 ) -> Result<CylheimChartViewer, CylToolError> {
     let mut chart = chart.clone();
     chart.sort_internal_data();
@@ -246,7 +240,7 @@ pub(crate) fn build_cylheim_chart_viewer(
     let mut note_viewer_list: Vec<CylheimChartPageViewerNotes> = Vec::new();
     for note in &note_list {
         let mut note_viewer = CylheimChartPageViewerNotes {
-            page_index: *note.page_index(),
+            page_index: *note.page_index() - if *note.is_forward() { 1 } else { 0 },
             note_type: *note.note_type(),
             id: *note.id(),
             tick: *note.tick(),
@@ -262,9 +256,7 @@ pub(crate) fn build_cylheim_chart_viewer(
             approach_rate: None,
             label: HashMap::new(),
         };
-        // note_viewer
-        //     .label
-        //     .insert("fingering".to_string(), "L".to_string());
+
         let note_page = &chart.page_list()[note_viewer.page_index as usize];
         let note_y = note_y_from_tick(
             *note.tick(),
@@ -277,6 +269,13 @@ pub(crate) fn build_cylheim_chart_viewer(
         note_viewer_list.push(note_viewer);
     }
     note_viewer_list.sort_by_key(|note_viewer| *note_viewer.id());
+    if let Some(labels) = labels {
+        for note_viewer in &mut note_viewer_list {
+            if let Some(label) = labels.get(note_viewer.id()) {
+                note_viewer.label = label.clone();
+            }
+        }
+    }
     for note in &note_list {
         if *note.next_id() >= 0
             && (*note.note_type() == CylheimChartPageViewerNoteType::Drag.get_id()
@@ -2017,6 +2016,7 @@ use tiny_skia::Pixmap;
 
 pub fn svg_to_png(svg_data: &[u8], output_size: Option<(u32, u32)>) -> Result<Vec<u8>> {
     // 解析 SVG 并创建渲染树
+
     let mut fontdb = usvg::fontdb::Database::new();
     fontdb.load_system_fonts();
 
@@ -2058,16 +2058,18 @@ pub fn svg_to_png(svg_data: &[u8], output_size: Option<(u32, u32)>) -> Result<Ve
         .encode_png()
         .map_err(|e| anyhow!("PNG 编码失败: {}", e))
 }
-// fn draw_svg_note(
-//     mut document: Document,
-//     note_type: u32,
-//     x: f64,
-//     y: f64,
-//     hold: Option<f64>,
-//     width:f64,height:f64
-// ) -> Result<(), CylToolError> {
-//     Ok(())
-// }
+#[allow(dead_code)]
+
+pub fn convert_chart_to_svg(
+    chart: CylheimChart,
+
+    columns: usize,
+    show_ghost_note: bool,
+    labels: Option<HashMap<u32, HashMap<String, String>>>,
+) -> Result<Document, CylToolError> {
+    let chart_viewer = build_cylheim_chart_viewer(chart, labels)?;
+    draw_all_svg_pages(&chart_viewer, columns, show_ghost_note)
+}
 #[cfg(test)]
 #[allow(unused)]
 mod test {
@@ -2090,7 +2092,7 @@ mod test {
         let f = fs::read_to_string(path).unwrap();
         let cylchart: CylheimChart = serde_json::from_str(&f).unwrap();
         let start = Instant::now(); // 记录开始时间
-        let chart_viewer = build_cylheim_chart_viewer(cylchart).unwrap();
+        let chart_viewer = build_cylheim_chart_viewer(cylchart, None).unwrap();
         let duration = start.elapsed(); // 计算经过的时间
         println!("build_cylheim_chart_viewer time elapsed: {:?}", duration);
         let svg = draw_all_svg_pages(&chart_viewer, 4, true).unwrap();

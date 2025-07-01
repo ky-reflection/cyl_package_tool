@@ -13,3 +13,6 @@ pub use cyl_config::{ChartInfo, CylheimProjectConfig, GenerateEventConfig};
 pub use cyl_theme::{CylheimDiffMeta, CylheimDiffOption, CylheimThemeColor, CylheimThemeIcon};
 #[allow(unused)]
 pub use cytoid_level::{CylheimLevelMetaConfig, CytoidLevelMetaConfig};
+
+#[allow(unused)]
+pub use chart_viewer::{convert_chart_to_svg, svg_to_png};
