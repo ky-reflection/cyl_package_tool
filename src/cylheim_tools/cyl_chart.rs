@@ -327,8 +327,6 @@ impl CylheimChart {
 
 pub fn load_chart_from_backup(input: &str) -> Result<CylheimChart, CylToolError> {
     let input_json: serde_json::Value = serde_json::from_str(input).expect("Invalid JSON");
-    println!("{:#?}", input_json);
-
     let chart_backup: Result<&Value, CylToolError> = input_json
         .get("chartBackup")
         .ok_or("Cannot find chart backup.".into());
