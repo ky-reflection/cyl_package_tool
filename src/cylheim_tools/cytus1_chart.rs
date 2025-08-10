@@ -36,6 +36,7 @@ pub struct Cytus1ChartNote {
 }
 #[derive(Serialize, Deserialize, Debug, Clone, Getters, Setters, MutGetters)]
 
+#[derive(Default)]
 pub struct Cytus1ChartLink {
     #[getset(get = "pub", set = "pub", get_mut = "pub")]
     link: Vec<u32>,
@@ -61,11 +62,6 @@ impl Cytus1ChartNote {
             x,
             hold_length,
         }
-    }
-}
-impl Default for Cytus1ChartLink {
-    fn default() -> Self {
-        Self { link: Vec::new() }
     }
 }
 impl fmt::Display for Cytus1Chart {

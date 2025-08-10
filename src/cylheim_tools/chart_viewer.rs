@@ -134,9 +134,9 @@ pub enum CylheimChartPageViewerNoteType {
     DropDrag,
     CustomNoteType(u32),
 }
-impl Into<u32> for CylheimChartPageViewerNoteType {
-    fn into(self) -> u32 {
-        match self {
+impl From<CylheimChartPageViewerNoteType> for u32 {
+    fn from(val: CylheimChartPageViewerNoteType) -> Self {
+        match val {
             CylheimChartPageViewerNoteType::Click => 0,
             CylheimChartPageViewerNoteType::Hold => 1,
             CylheimChartPageViewerNoteType::LongHold => 2,
@@ -214,15 +214,12 @@ pub(crate) struct CylheimChartPageViewerScanlineEvent {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[allow(unused)]
+#[derive(Default)]
 pub enum CylheimChartPageViewerScanlineEventType {
     Accelerate,
     Decelerate,
+    #[default]
     Stable,
-}
-impl Default for CylheimChartPageViewerScanlineEventType {
-    fn default() -> Self {
-        CylheimChartPageViewerScanlineEventType::Stable
-    }
 }
 #[allow(dead_code)]
 pub(crate) fn build_cylheim_chart_viewer(
@@ -300,7 +297,7 @@ pub(crate) fn build_cylheim_chart_viewer(
             start_tick: *page.start_tick(),
             end_tick: *page.end_tick(),
             scan_line_direction: *page.scan_line_direction(),
-            ghost_scan_line_direction: 0.into(),
+            ghost_scan_line_direction: 0,
             tempo_list: Vec::new(),
             note_list: Vec::new(),
             ghost_note_list: Vec::new(),
@@ -510,7 +507,7 @@ pub(crate) fn build_cylheim_chart_viewer(
                     .push(CylheimChartPageViewerScanlineEvent {
                         scanline: page_scanline,
                         y: event_y,
-                        event_type: event_type,
+                        event_type,
                     });
                 current_scanline = page_scanline;
             }
@@ -550,7 +547,7 @@ pub(crate) fn build_cylheim_chart_viewer(
                     .push(CylheimChartPageViewerScanlineEvent {
                         scanline: page_scanline,
                         y: event_y,
-                        event_type: event_type,
+                        event_type,
                     });
                 current_tempo = tempo.clone();
                 current_scanline = page_scanline;
@@ -1255,7 +1252,7 @@ pub(crate) fn draw_svg_page(
     // println!("SCANLINE: {:>8.2}", page_viewer.scanline.max_scanline);
     if page_viewer.scanline.is_stable {
         document = document.add(
-            Text::new(format!("SCANLINE:"))
+            Text::new("SCANLINE:".to_string())
                 .set("x", 409.6)
                 .set("y", 20)
                 .set("font-family", "Electrolize")
@@ -1276,7 +1273,7 @@ pub(crate) fn draw_svg_page(
         );
     } else {
         document = document.add(
-            Text::new(format!("MAX SCANLINE:"))
+            Text::new("MAX SCANLINE:".to_string())
                 .set("x", 409.6)
                 .set("y", 20)
                 .set("font-family", "Electrolize")
@@ -1296,7 +1293,7 @@ pub(crate) fn draw_svg_page(
                 .set("fill", "white"),
         );
         document = document.add(
-            Text::new(format!("MIN SCANLINE:"))
+            Text::new("MIN SCANLINE:".to_string())
                 .set("x", 409.6)
                 .set("y", 40)
                 .set("font-family", "Electrolize")
@@ -1952,7 +1949,7 @@ pub(crate) fn draw_all_svg_pages(
     let page_height = 384;
     let gap = 20;
     let outer_gap = 24;
-    let rows = (chart_viewer.pages.len() + columns - 1) / columns;
+    let rows = chart_viewer.pages.len().div_ceil(columns);
 
     let total_width = (page_width + gap) * columns - gap + 2 * outer_gap;
     let total_height = (page_height + gap) * rows - gap + 2 * outer_gap;
@@ -1999,7 +1996,7 @@ fn note_y_from_tick(tick: u32, start: u32, end: u32, direction: i32) -> f64 {
     let y = (tick - start) as f64 / (end - start) as f64;
     let result = if direction < 0 { y } else { 1.0 - y };
     if result < 0.0 {
-        return 0.0;
+        0.0
     } else if result > 1.0 {
         return 1.0;
     } else {
@@ -2009,7 +2006,7 @@ fn note_y_from_tick(tick: u32, start: u32, end: u32, direction: i32) -> f64 {
 #[allow(dead_code)]
 
 pub(crate) fn tempo_to_scanline(tempo: u32, page_size: u32, position_function_arg: f64) -> f64 {
-    (60_000_000.0 / tempo as f64) * position_function_arg * 960.0 as f64 / page_size as f64
+    (60_000_000.0 / tempo as f64) * position_function_arg * 960.0_f64 / page_size as f64
 }
 use anyhow::{anyhow, Result};
 use resvg::usvg;
@@ -2044,8 +2041,8 @@ pub fn svg_to_png(svg_data: &[u8], output_size: Option<(u32, u32)>) -> Result<Ve
 
     // 计算缩放变换
     let scale = if let Some((w, h)) = output_size {
-        let sx = w as f32 / tree.size().width() as f32;
-        let sy = h as f32 / tree.size().height() as f32;
+        let sx = w as f32 / tree.size().width();
+        let sy = h as f32 / tree.size().height();
         tiny_skia::Transform::from_scale(sx, sy)
     } else {
         tiny_skia::Transform::identity()
@@ -2099,7 +2096,7 @@ mod test {
         let svg = draw_all_svg_pages(&chart_viewer, 4, true).unwrap();
         fs::write(svg_out, svg.to_string()).unwrap();
         fs::write(path_out, serde_json::to_string(&chart_viewer).unwrap());
-        let png = svg_to_png(&svg.to_string().as_bytes(), None).unwrap();
+        let png = svg_to_png(svg.to_string().as_bytes(), None).unwrap();
         fs::write(get_output_path("viewer_test_out.png"), png).unwrap();
         println!("all time elapsed: {:?}", duration);
     }

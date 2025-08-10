@@ -3,7 +3,6 @@ use cyl_package_tool::cylheim_tools::chart_viewer::convert_chart_to_svg;
 use cyl_package_tool::cylheim_tools::cyl_chart::load_chart_from_backup;
 use cyl_package_tool::cylheim_tools::CylheimChart;
 use resvg::render;
-use serde_json;
 use std::{fs, path::PathBuf, time::Instant};
 use tiny_skia::Pixmap;
 use usvg::Options;

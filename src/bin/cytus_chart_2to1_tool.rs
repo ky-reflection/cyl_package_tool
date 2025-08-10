@@ -72,11 +72,11 @@ impl eframe::App for MyApp {
                             } else {
                                 self.selected_file = Some(path.clone());
                                 self.message =
-                                    format!("File you selected is not a valid Cytus2 chart.");
+                                    "File you selected is not a valid Cytus2 chart.".to_string();
                             }
                         } else {
                             self.selected_file = Some(path.clone());
-                            self.message = format!("File you selected is not a text file.");
+                            self.message = "File you selected is not a text file.".to_string();
                         }
                     }
                 }
@@ -93,7 +93,7 @@ impl eframe::App for MyApp {
 fn save_new_file(original_path: &Path, content: &str, msg: &str, ext: &str) -> io::Result<PathBuf> {
     let mut new_file_path = original_path.to_path_buf();
     if let Some(stem) = new_file_path.file_stem() {
-        let new_file_name = format!("{}_{}.{}", stem.to_string_lossy(), msg.to_string(), ext);
+        let new_file_name = format!("{}_{}.{}", stem.to_string_lossy(), msg, ext);
         new_file_path.set_file_name(new_file_name);
     }
     let mut file = File::create(&new_file_path)?;
