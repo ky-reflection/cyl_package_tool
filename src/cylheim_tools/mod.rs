@@ -6,7 +6,7 @@ pub mod cytoid_level;
 pub mod cytus1_chart;
 pub mod utils;
 #[allow(unused)]
-pub use cyl_chart::CylheimChart;
+pub use cyl_chart::{load_chart_from_backup, CylheimChart};
 #[allow(unused)]
 pub use cyl_config::{ChartInfo, CylheimProjectConfig, GenerateEventConfig};
 #[allow(unused)]

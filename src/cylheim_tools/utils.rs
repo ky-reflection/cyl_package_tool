@@ -33,3 +33,10 @@ impl From<&str> for CylToolError {
         CylToolError::new(msg)
     }
 }
+use serde_json::Error as SerdeJsonError;
+
+impl From<SerdeJsonError> for CylToolError {
+    fn from(err: SerdeJsonError) -> Self {
+        CylToolError::new(&format!("JSON parse error: {}", err))
+    }
+}

@@ -467,7 +467,7 @@ pub(crate) fn build_cylheim_chart_viewer(
                 chart_viewer.pages[index + 1].position_function.clone();
         }
     }
-    let current_tempo = chart.tempo_list()[0].clone();
+    let mut current_tempo = chart.tempo_list()[0].clone();
     let mut current_scanline = tempo_to_scanline(
         *current_tempo.value(),
         chart.page_list()[0].get_page_size() as u32,
@@ -552,6 +552,7 @@ pub(crate) fn build_cylheim_chart_viewer(
                         y: event_y,
                         event_type: event_type,
                     });
+                current_tempo = tempo.clone();
                 current_scanline = page_scanline;
             }
             if start_scanline > page.scanline.max_scanline {
