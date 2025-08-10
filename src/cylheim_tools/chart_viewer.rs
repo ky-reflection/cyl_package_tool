@@ -153,7 +153,6 @@ impl From<CylheimChartPageViewerNoteType> for u32 {
 }
 impl CylheimChartPageViewerNoteType {
     #[allow(unused)]
-
     pub fn get_id(&self) -> u32 {
         match self {
             CylheimChartPageViewerNoteType::Click => 0,
@@ -2004,7 +2003,6 @@ fn note_y_from_tick(tick: u32, start: u32, end: u32, direction: i32) -> f64 {
     }
 }
 #[allow(dead_code)]
-
 pub(crate) fn tempo_to_scanline(tempo: u32, page_size: u32, position_function_arg: f64) -> f64 {
     (60_000_000.0 / tempo as f64) * position_function_arg * 960.0_f64 / page_size as f64
 }
@@ -2057,10 +2055,8 @@ pub fn svg_to_png(svg_data: &[u8], output_size: Option<(u32, u32)>) -> Result<Ve
         .map_err(|e| anyhow!("PNG 编码失败: {}", e))
 }
 #[allow(dead_code)]
-
 pub fn convert_chart_to_svg(
     chart: CylheimChart,
-
     columns: usize,
     show_ghost_note: bool,
     labels: Option<HashMap<u32, HashMap<String, String>>>,

@@ -124,10 +124,7 @@ impl CylheimChart {
         &self,
         page_shift: Option<f64>,
     ) -> Result<Cytus1Chart, CylToolError> {
-        let check_note_type = |note_type: u32| match note_type {
-            0 | 1 | 3 | 4 => true,
-            _ => false,
-        };
+        let check_note_type = |note_type: u32| matches!(note_type, 0 | 1 | 3 | 4);
         let get_tick_time_second = |tempo: u32, time_base: u32, tick: u32| {
             tick as f64 / time_base as f64 * tempo as f64 / 1000.0 / 1000.0
         };
@@ -285,10 +282,7 @@ impl CylheimChart {
             return Err(CylToolError::from("Invalid tempo.".to_string()));
         }
         let time_base = current_chart.time_base;
-        let true_tempo = current_chart
-            .tempo_list.last()
-            .unwrap()
-            .clone();
+        let true_tempo = current_chart.tempo_list.last().unwrap().clone();
         let page_shift = get_tick_time_second(true_tempo.value, time_base, true_tempo.tick);
         current_chart.event_order_list_mut().clear();
         current_chart.tempo_list_mut().clear();
@@ -299,7 +293,7 @@ impl CylheimChart {
         for note in current_chart.note_list_mut() {
             note.set_tick(note.tick - true_tempo.tick);
         }
-        
+
         current_chart.to_cytus1_chart_directly(Some(page_shift))
     }
     #[allow(dead_code)]

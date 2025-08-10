@@ -3,7 +3,11 @@ use cyl_package_tool::cylheim_tools::chart_viewer::convert_chart_to_svg;
 use cyl_package_tool::cylheim_tools::cyl_chart::load_chart_from_backup;
 use cyl_package_tool::cylheim_tools::CylheimChart;
 use resvg::render;
-use std::{fs, path::PathBuf, time::Instant};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    time::Instant,
+};
 use tiny_skia::Pixmap;
 use usvg::Options;
 
@@ -78,7 +82,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn process_file(
     input_path: &PathBuf,
-    output_dir: &PathBuf,
+    output_dir: &Path,
     column: usize,
     show_ghost_note: bool,
     filename: &Option<String>,

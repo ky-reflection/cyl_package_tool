@@ -97,6 +97,6 @@ fn save_new_file(original_path: &Path, content: &str, msg: &str, ext: &str) -> i
         new_file_path.set_file_name(new_file_name);
     }
     let mut file = File::create(&new_file_path)?;
-    file.write(content.as_bytes())?;
+    file.write_all(content.as_bytes())?;
     Ok(new_file_path)
 }
