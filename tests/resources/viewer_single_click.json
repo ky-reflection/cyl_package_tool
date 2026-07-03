@@ -1,0 +1,36 @@
+{
+  "format_version": 1,
+  "time_base": 480,
+  "start_offset_time": 0.0,
+  "page_list": [
+    {
+      "start_tick": 0,
+      "end_tick": 960,
+      "scan_line_direction": 1,
+      "PositionFunction": {
+        "Type": 0,
+        "Arguments": [1.0, 0.0]
+      }
+    }
+  ],
+  "tempo_list": [
+    {
+      "tick": 0,
+      "value": 1200000
+    }
+  ],
+  "event_order_list": [],
+  "note_list": [
+    {
+      "page_index": 0,
+      "type": 0,
+      "id": 0,
+      "tick": 480,
+      "x": 0.5,
+      "has_sibling": false,
+      "hold_tick": 0,
+      "next_id": -1,
+      "is_forward": false
+    }
+  ]
+}

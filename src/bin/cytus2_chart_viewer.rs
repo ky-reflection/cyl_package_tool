@@ -37,6 +37,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let show_ghost_note = args.show_ghost_note;
     let column = args.columns;
+    if column == 0 {
+        eprintln!("Error: columns must be greater than 0.");
+        return Err("columns must be greater than 0".into());
+    }
     let output_dir = match args.output {
         Some(path) => path,
         None => {

@@ -312,14 +312,27 @@ impl CylheimChart {
     #[allow(dead_code)]
     pub fn sort_and_reassign_note_ids(&mut self) {
         self.note_list.sort_by_key(|note| note.tick);
+        let old_to_new: HashMap<u32, u32> = self
+            .note_list
+            .iter()
+            .enumerate()
+            .map(|(new_id, note)| (note.id, new_id as u32))
+            .collect();
         for (new_id, note) in self.note_list.iter_mut().enumerate() {
             note.id = new_id as u32;
+        }
+        for note in self.note_list.iter_mut() {
+            if note.next_id >= 0 {
+                if let Some(&mapped) = old_to_new.get(&(note.next_id as u32)) {
+                    note.next_id = mapped as i32;
+                }
+            }
         }
     }
 }
 
 pub fn load_chart_from_backup(input: &str) -> Result<CylheimChart, CylToolError> {
-    let input_json: serde_json::Value = serde_json::from_str(input).expect("Invalid JSON");
+    let input_json: serde_json::Value = serde_json::from_str(input)?;
     let chart_backup: Result<&Value, CylToolError> = input_json
         .get("chartBackup")
         .ok_or("Cannot find chart backup.".into());
@@ -340,9 +353,13 @@ mod test {
     fn get_output_path(filename: &str) -> String {
         TEST_OUTPUT_ROOT.to_owned() + filename
     }
+    fn ensure_output_dir() {
+        fs::create_dir_all(TEST_OUTPUT_ROOT).unwrap();
+    }
     #[test]
     #[allow(unused)]
     fn test_cytus2to1() {
+        ensure_output_dir();
         let path1 = get_resource_path("test_valid_c2to1_chart.json");
         let path2 = get_resource_path("test_cyl_chart.json");
         let path3 = get_output_path("test_c1.txt");
@@ -357,6 +374,7 @@ mod test {
     }
     #[test]
     fn test_cytus2to1_with_flag() {
+        ensure_output_dir();
         let path = get_resource_path("cylchart_with_cytus1_flag.json");
         let path_out = get_output_path("cylchart_with_cytus1_flag_converted.txt");
         let f = fs::read_to_string(path).unwrap();
