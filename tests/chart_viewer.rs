@@ -1,7 +1,8 @@
-use cyl_package_tool::cylheim_tools::{convert_chart_to_svg, svg_to_png, CylheimChart};
+use cyl_package_tool::{convert_chart_to_svg, svg_to_png, CylheimChart};
 use std::fs;
 
 const OUTPUT_DIR: &str = "./tests/output/viewer_cases/";
+const PNG_SIGNATURE: &[u8; 8] = b"\x89PNG\r\n\x1a\n";
 
 fn ensure_output_dir() {
     fs::create_dir_all(OUTPUT_DIR).unwrap();
@@ -13,15 +14,52 @@ fn load_chart(name: &str) -> CylheimChart {
     serde_json::from_str(&content).unwrap()
 }
 
-fn save_case(name: &str, svg: &svg::Document) {
+fn parse_png_dimensions(png: &[u8]) -> (u32, u32) {
+    assert!(png.len() >= 24, "PNG too short for IHDR");
+    assert_eq!(&png[0..8], PNG_SIGNATURE, "invalid PNG signature");
+    let width = u32::from_be_bytes(png[16..20].try_into().unwrap());
+    let height = u32::from_be_bytes(png[20..24].try_into().unwrap());
+    (width, height)
+}
+
+fn parse_svg_viewbox(svg: &str) -> (u32, u32) {
+    let marker = "viewBox=\"0 0 ";
+    let start = svg
+        .find(marker)
+        .unwrap_or_else(|| panic!("viewBox not found in SVG"));
+    let rest = &svg[start + marker.len()..];
+    let end = rest.find('"').expect("malformed viewBox");
+    let parts: Vec<&str> = rest[..end].split_whitespace().collect();
+    assert_eq!(parts.len(), 2, "viewBox should have width and height");
+    let width: u32 = parts[0].parse().expect("viewBox width");
+    let height: u32 = parts[1].parse().expect("viewBox height");
+    (width, height)
+}
+
+fn save_case(name: &str, svg_text: &str) {
     let svg_path = format!("{OUTPUT_DIR}{name}.svg");
     let png_path = format!("{OUTPUT_DIR}{name}.png");
-    let svg_text = svg.to_string();
-    fs::write(&svg_path, &svg_text).unwrap();
+    fs::write(&svg_path, svg_text).unwrap();
     let png = svg_to_png(svg_text.as_bytes(), None).unwrap();
-    fs::write(&png_path, png).unwrap();
+    fs::write(&png_path, &png).unwrap();
     println!("saved: {svg_path}");
     println!("saved: {png_path}");
+}
+
+#[test]
+fn svg_to_png_matches_svg_viewbox() {
+    let chart = load_chart("viewer_single_click.json");
+    let svg = convert_chart_to_svg(chart, 1, false, None).unwrap();
+    let svg_text = svg.to_string();
+    let (svg_w, svg_h) = parse_svg_viewbox(&svg_text);
+    let png = svg_to_png(svg_text.as_bytes(), None).unwrap();
+    let (png_w, png_h) = parse_png_dimensions(&png);
+    assert_eq!(
+        (png_w, png_h),
+        (svg_w, svg_h),
+        "PNG dimensions should match SVG viewBox"
+    );
+    println!("svg_to_png dimensions verified: {png_w}x{png_h}");
 }
 
 #[test]
@@ -32,7 +70,7 @@ fn viewer_single_click_note() {
     let text = svg.to_string();
     assert!(text.contains("<circle"), "click note should render circles");
     assert!(text.contains("\n0\n"), "page index label should be present");
-    save_case("single_click", &svg);
+    save_case("single_click", &text);
 }
 
 #[test]
@@ -41,10 +79,13 @@ fn viewer_two_page_with_ghost() {
     let chart = load_chart("viewer_two_page.json");
     let svg = convert_chart_to_svg(chart, 2, true, None).unwrap();
     let text = svg.to_string();
-    assert!(text.contains("opacity=\"0.3\""), "ghost layer should use opacity 0.3");
+    assert!(
+        text.contains("opacity=\"0.3\""),
+        "ghost layer should use opacity 0.3"
+    );
     assert!(text.contains("\n0\n"));
     assert!(text.contains("\n1\n"));
-    save_case("two_page_ghost", &svg);
+    save_case("two_page_ghost", &text);
 }
 
 #[test]
@@ -57,7 +98,7 @@ fn viewer_drag_chain_links() {
         text.contains("stroke-dasharray=\"3,3\""),
         "drag links should render dashed lines"
     );
-    save_case("drag_chain", &svg);
+    save_case("drag_chain", &text);
 }
 
 #[test]

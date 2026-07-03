@@ -848,8 +848,9 @@ fn scanline_direction_arrow(scan_line_direction: i32) -> Polygon {
 }
 
 pub(crate) fn draw_svg_page(
-    page_viewer: CylheimChartPageViewer,
+    page_viewer: &CylheimChartPageViewer,
     show_ghost_note: bool,
+    ghost_source: Option<&CylheimChartPageViewer>,
 ) -> Result<Document, CylToolError> {
     let transform = PageTransform::transform_from_position_function(page_viewer.position_function.as_ref());
 
@@ -876,22 +877,24 @@ pub(crate) fn draw_svg_page(
     );
 
     if show_ghost_note {
-        let ghost_transform = PageTransform::transform_from_position_function(
-            page_viewer.ghost_position_function.as_ref(),
-        );
-        document = document.add(draw_note_layers(
-            &page_viewer.ghost_note_list,
-            page_viewer.ghost_scan_line_direction,
-            &ghost_transform,
-            NoteLayerOptions {
-                opacity: Some(0.3),
-                show_labels: false,
-            },
-        ));
+        if let Some(ghost_page) = ghost_source {
+            let ghost_transform = PageTransform::transform_from_position_function(
+                ghost_page.position_function.as_ref(),
+            );
+            document = document.add(draw_note_layers(
+                &ghost_page.note_list,
+                ghost_page.scan_line_direction,
+                &ghost_transform,
+                NoteLayerOptions {
+                    opacity: Some(0.3),
+                    show_labels: false,
+                },
+            ));
+        }
     }
 
     document = draw_scanline_boundary_lines(document, transform.y1, transform.y2);
-    document = draw_scanline_text_and_events(document, &page_viewer, &transform);
+    document = draw_scanline_text_and_events(document, page_viewer, &transform);
 
     document = document.add(draw_note_layers(
         &page_viewer.note_list,
@@ -940,7 +943,8 @@ pub(crate) fn draw_all_svg_pages(
         let col = index % columns;
         let row = index / columns;
 
-        let page_svg = draw_svg_page(page_viewer.clone(), show_ghost_note)?;
+        let ghost_source = show_ghost_note.then(|| chart_viewer.pages.get(index + 1)).flatten();
+        let page_svg = draw_svg_page(page_viewer, show_ghost_note, ghost_source)?;
 
         let mut translated_group = Group::new().set(
             "transform",

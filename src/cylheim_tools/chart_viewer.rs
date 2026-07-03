@@ -107,7 +107,7 @@ impl CylheimChartPageViewerHoldBodyHandler {
         self.start_y <= self.end_y
     }
 }
-#[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone, MutGetters, Default)]
+#[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone, Copy, MutGetters, Default)]
 #[allow(unused)]
 pub(crate) struct CylheimChartPageViewerNotePostion {
     #[getset(get = "pub", set = "pub")]
@@ -247,16 +247,14 @@ pub(crate) fn build_cylheim_chart_viewer(
     labels: Option<HashMap<u32, HashMap<String, String>>>,
 ) -> Result<CylheimChartViewer, CylToolError> {
     validate_chart_for_viewer(&chart)?;
-    let mut chart = chart.clone();
+    let mut chart = chart;
     chart.sort_internal_data();
     chart.sort_and_reassign_note_ids();
-    let mut chart_viewer = CylheimChartViewer {
-        chart: chart.clone(),
-        pages: Vec::new(),
-    };
-    let note_list = chart.note_list().clone();
-    let mut note_viewer_list: Vec<CylheimChartPageViewerNotes> = Vec::new();
-    for note in &note_list {
+
+    let page_count = chart.page_list().len();
+    let mut note_viewer_list: Vec<CylheimChartPageViewerNotes> =
+        Vec::with_capacity(chart.note_list().len());
+    for note in chart.note_list() {
         let mut note_viewer = CylheimChartPageViewerNotes {
             page_index: *note.page_index() - if *note.is_forward() { 1 } else { 0 },
             note_type: *note.note_type(),
@@ -294,7 +292,7 @@ pub(crate) fn build_cylheim_chart_viewer(
             }
         }
     }
-    for note in &note_list {
+    for note in chart.note_list() {
         if *note.next_id() >= 0
             && (*note.note_type() == CylheimChartPageViewerNoteType::Drag.get_id()
                 || *note.note_type() == CylheimChartPageViewerNoteType::DragChild.get_id()
@@ -303,45 +301,49 @@ pub(crate) fn build_cylheim_chart_viewer(
         {
             let next_note_index = *note.next_id() as usize;
             let current_note_index = *note.id() as usize;
-            let next_note_pos = note_viewer_list[next_note_index].position().clone();
-            let current_note_pos = note_viewer_list[current_note_index].position().clone();
+            let next_note_pos = *note_viewer_list[next_note_index].position();
+            let current_note_pos = *note_viewer_list[current_note_index].position();
 
-            note_viewer_list[next_note_index].set_drag_parent_pos(Some(current_note_pos));
-            note_viewer_list[current_note_index].set_drag_child_pos(Some(next_note_pos));
+            note_viewer_list[next_note_index].set_drag_parent_pos(Some(next_note_pos));
+            note_viewer_list[current_note_index].set_drag_child_pos(Some(current_note_pos));
         }
     }
 
-    for (page_index, page) in chart.clone().page_list().iter().enumerate() {
-        let mut page_viewer = CylheimChartPageViewer {
-            time_base: *chart.time_base(),
-            page_index: page_index as u32,
-            start_tick: *page.start_tick(),
-            end_tick: *page.end_tick(),
-            scan_line_direction: *page.scan_line_direction(),
-            ghost_scan_line_direction: 0,
-            tempo_list: Vec::new(),
-            note_list: Vec::new(),
-            ghost_note_list: Vec::new(),
-            position_function: page.position_function().clone(),
-            ghost_position_function: None,
-            scanline: CylheimChartPageViewerScanlineHandler::default(),
-        };
-        page_viewer.tempo_list = chart.tempo_list()[chart
-            .tempo_list()
-            .partition_point(|tempo| *tempo.tick() < page_viewer.start_tick)
-            ..chart
-                .tempo_list()
-                .partition_point(|tempo| *tempo.tick() < page_viewer.end_tick)]
-            .to_vec();
-        page_viewer.note_list = note_viewer_list
-            .iter()
-            .filter(|note_viewer| note_viewer.page_index == page_index as u32)
-            .cloned()
-            .collect();
-
-        chart_viewer.pages.push(page_viewer);
+    let mut notes_by_page: Vec<Vec<CylheimChartPageViewerNotes>> =
+        vec![Vec::new(); page_count];
+    for note_viewer in note_viewer_list {
+        notes_by_page[note_viewer.page_index as usize].push(note_viewer);
     }
-    for note in chart.note_list() {
+
+    let tempo_list = chart.tempo_list();
+    let pages: Vec<CylheimChartPageViewer> = chart
+        .page_list()
+        .iter()
+        .enumerate()
+        .map(|(page_index, page)| {
+            let start_tick = *page.start_tick();
+            let end_tick = *page.end_tick();
+            let tempo_start = tempo_list.partition_point(|tempo| *tempo.tick() < start_tick);
+            let tempo_end = tempo_list.partition_point(|tempo| *tempo.tick() < end_tick);
+            CylheimChartPageViewer {
+                time_base: *chart.time_base(),
+                page_index: page_index as u32,
+                start_tick,
+                end_tick,
+                scan_line_direction: *page.scan_line_direction(),
+                ghost_scan_line_direction: 0,
+                tempo_list: tempo_list[tempo_start..tempo_end].to_vec(),
+                note_list: std::mem::take(&mut notes_by_page[page_index]),
+                ghost_note_list: Vec::new(),
+                position_function: page.position_function().clone(),
+                ghost_position_function: None,
+                scanline: CylheimChartPageViewerScanlineHandler::default(),
+            }
+        })
+        .collect();
+
+    let mut chart_viewer = CylheimChartViewer { chart, pages };
+    for note in chart_viewer.chart.note_list() {
         match CylheimChartPageViewerNoteType::from_id(*note.note_type()) {
             Some(CylheimChartPageViewerNoteType::LongHold) => {
                 let page_index = *note.page_index() as usize;
@@ -473,27 +475,21 @@ pub(crate) fn build_cylheim_chart_viewer(
             Some(_) | None => (),
         }
     }
-    for index in 0..chart_viewer.pages.len() {
-        if index >= chart_viewer.pages.len() - 1 {
-            break;
-        } else {
-            chart_viewer.pages[index].ghost_scan_line_direction =
-                chart_viewer.pages[index + 1].scan_line_direction;
-            chart_viewer.pages[index].ghost_note_list =
-                chart_viewer.pages[index + 1].note_list.clone();
-            chart_viewer.pages[index].ghost_position_function =
-                chart_viewer.pages[index + 1].position_function.clone();
-        }
+    let page_count = chart_viewer.pages.len();
+    for index in 0..page_count.saturating_sub(1) {
+        chart_viewer.pages[index].ghost_scan_line_direction =
+            chart_viewer.pages[index + 1].scan_line_direction;
+        chart_viewer.pages[index].ghost_position_function =
+            chart_viewer.pages[index + 1].position_function.clone();
     }
-    let mut current_tempo = chart.tempo_list()[0].clone();
-    let mut current_scanline = tempo_to_scanline(
-        *current_tempo.value(),
-        chart.page_list()[0].get_page_size() as u32,
-        chart.page_list()[0]
-            .position_function()
-            .as_ref()
-            .map_or(1.0, |x| x.position_function_arguments()[0]),
-    );
+    let first_page_size = chart_viewer.pages[0].end_tick - chart_viewer.pages[0].start_tick;
+    let first_page_pf_arg = chart_viewer.pages[0]
+        .position_function
+        .as_ref()
+        .map_or(1.0, |x| x.position_function_arguments()[0]);
+    let mut current_tempo_value = *chart_viewer.chart.tempo_list()[0].value();
+    let mut current_scanline =
+        tempo_to_scanline(current_tempo_value, first_page_size, first_page_pf_arg);
     for page in chart_viewer.pages.iter_mut() {
         let page_size = page.end_tick - page.start_tick;
         let page_position_function_arg = page
@@ -503,7 +499,7 @@ pub(crate) fn build_cylheim_chart_viewer(
         if page.tempo_list.is_empty() {
             page.scanline.is_stable = true;
             let page_scanline = tempo_to_scanline(
-                *current_tempo.value(),
+                current_tempo_value,
                 page_size,
                 page_position_function_arg,
             );
@@ -570,7 +566,7 @@ pub(crate) fn build_cylheim_chart_viewer(
                         y: event_y,
                         event_type,
                     });
-                current_tempo = tempo.clone();
+                current_tempo_value = *tempo.value();
                 current_scanline = page_scanline;
             }
             if start_scanline > page.scanline.max_scanline {

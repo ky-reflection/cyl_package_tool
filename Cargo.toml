@@ -3,30 +3,35 @@ name = "cyl_package_tool"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-crossterm = "0.28.0"
-eframe = "0.28.1"
-getset = "0.1.2"
-rand = "0.8.5"
-regex = "1.10.5"
-rfd = "0.14.1"
-serde = { version = "1.0.204", features = ["derive"] }
-serde_derive = "1.0.204"
-serde_json = "1.0.120"
-toml = "0.8.16"
-walkdir = "2.5.0"
-tiny-skia = "0.11.4"
-resvg = "0.45.1"
-anyhow = "1.0.98"
-svg = "0.18.0"
-clap = {version="4.5.40", features = ["derive"]}
-dialoguer = "0.11.0"
-usvg = "0.45.1"
+[features]
+default = ["viewer"]
+viewer = ["dep:clap", "dep:svg", "dep:resvg", "dep:usvg", "dep:tiny-skia", "dep:anyhow"]
+gui = ["dep:eframe", "dep:rfd"]
 
+[dependencies]
+getset = "0.1.2"
+regex = "1.10.5"
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.120"
+
+# viewer (SVG/PNG preview)
+clap = { version = "4.5.40", features = ["derive"], optional = true }
+svg = { version = "0.18.0", optional = true }
+resvg = { version = "0.45.1", optional = true }
+usvg = { version = "0.45.1", optional = true }
+tiny-skia = { version = "0.11.4", optional = true }
+anyhow = { version = "1.0.98", optional = true }
+
+# gui (C2→C1 converter)
+eframe = { version = "0.28.1", optional = true }
+rfd = { version = "0.14.1", optional = true }
 
 [[bin]]
 name = "c2to1_converter"
 path = "src/bin/cytus_chart_2to1_tool.rs"
+required-features = ["gui"]
+
 [[bin]]
 name = "chart_viewer"
 path = "src/bin/cytus2_chart_viewer.rs"
+required-features = ["viewer"]

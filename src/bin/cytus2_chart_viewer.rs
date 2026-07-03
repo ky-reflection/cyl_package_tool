@@ -1,15 +1,10 @@
 use clap::Parser;
-use cyl_package_tool::cylheim_tools::chart_viewer::convert_chart_to_svg;
-use cyl_package_tool::cylheim_tools::cyl_chart::load_chart_from_backup;
-use cyl_package_tool::cylheim_tools::CylheimChart;
-use resvg::render;
+use cyl_package_tool::cylheim_tools::{convert_chart_to_svg, load_chart_from_backup, svg_to_png, CylheimChart};
 use std::{
     fs,
     path::{Path, PathBuf},
     time::Instant,
 };
-use tiny_skia::Pixmap;
-use usvg::Options;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -105,18 +100,16 @@ fn process_file(
     let svg = convert_chart_to_svg(cylchart, column, show_ghost_note, None)?;
     let build_duration = start.elapsed();
     println!("convert_chart_to_svg time elapsed: {:?}", build_duration);
-    let mut opt = Options::default();
-    opt.fontdb_mut().load_system_fonts();
-    let tree = usvg::Tree::from_data(svg.to_string().as_bytes(), &opt)?;
-    let size = tree.size().to_int_size();
-    let mut pixmap = Pixmap::new(size.width(), size.height()).ok_or("无法创建 pixmap")?;
-    render(&tree, tiny_skia::Transform::default(), &mut pixmap.as_mut());
+
+    let svg_bytes = svg.to_string();
+    let png_bytes = svg_to_png(svg_bytes.as_bytes(), None)?;
+
     let file_name = filename.clone().unwrap_or(input_file_stem);
-    let png_path = output_dir.join(format!("{}.png", file_name));
-    let svg_path = output_dir.join(format!("{}.svg", file_name));
-    std::fs::write(&svg_path, svg.to_string())?;
-    println!("save to {:?}", svg_path);
-    pixmap.save_png(&png_path)?;
-    println!("save to {:?}", png_path);
+    let png_path = output_dir.join(format!("{file_name}.png"));
+    let svg_path = output_dir.join(format!("{file_name}.svg"));
+    fs::write(&svg_path, &svg_bytes)?;
+    println!("save to {svg_path:?}");
+    fs::write(&png_path, &png_bytes)?;
+    println!("save to {png_path:?}");
     Ok(())
 }
