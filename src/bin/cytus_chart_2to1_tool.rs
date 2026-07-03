@@ -1,4 +1,6 @@
-use crate::cylheim_tools::CylheimChart;
+﻿#![windows_subsystem = "windows"]
+
+use cyl_package_tool::cylheim_tools::CylheimChart;
 use eframe::egui::{self, CentralPanel, RichText};
 use rfd::FileDialog;
 use std::{
@@ -6,15 +8,33 @@ use std::{
     io::{self, Write},
     path::{Path, PathBuf},
 };
+fn main() -> Result<(), eframe::Error> {
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([600.0, 450.0]),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "Cytus Chart 2 to 1 Converter",
+        options,
+        Box::new(|_cc| Ok(Box::new(MyApp::default()))),
+    )
+}
 
-// 子应用 C2to1Tool
-#[derive(Default)]
-pub struct C2to1Tool {
+struct MyApp {
     selected_file: Option<PathBuf>,
     message: String,
 }
 
-impl eframe::App for C2to1Tool {
+impl Default for MyApp {
+    fn default() -> Self {
+        Self {
+            selected_file: None,
+            message: "No file selected".to_string(),
+        }
+    }
+}
+
+impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         CentralPanel::default().show(ctx, |ui| {
             ui.vertical_centered(|ui| {
@@ -52,33 +72,31 @@ impl eframe::App for C2to1Tool {
                             } else {
                                 self.selected_file = Some(path.clone());
                                 self.message =
-                                    format!("File you selected is not a valid Cytus2 chart.");
+                                    "File you selected is not a valid Cytus2 chart.".to_string();
                             }
                         } else {
                             self.selected_file = Some(path.clone());
-                            self.message = format!("File you selected is not a text file.");
+                            self.message = "File you selected is not a text file.".to_string();
                         }
                     }
                 }
                 ui.add_space(15.0);
                 ui.label(RichText::new(&self.message).size(18.0));
+                // ui.add_space(20.0);
+                // if self.selected_file.is_some() && ui.button("Exit").clicked() {
+                //     std::process::exit(0);
+                // }
             });
         });
     }
 }
-
-pub fn save_new_file(
-    original_path: &Path,
-    content: &str,
-    msg: &str,
-    ext: &str,
-) -> io::Result<PathBuf> {
+fn save_new_file(original_path: &Path, content: &str, msg: &str, ext: &str) -> io::Result<PathBuf> {
     let mut new_file_path = original_path.to_path_buf();
     if let Some(stem) = new_file_path.file_stem() {
-        let new_file_name = format!("{}_{}.{}", stem.to_string_lossy(), msg.to_string(), ext);
+        let new_file_name = format!("{}_{}.{}", stem.to_string_lossy(), msg, ext);
         new_file_path.set_file_name(new_file_name);
     }
     let mut file = File::create(&new_file_path)?;
-    file.write(content.as_bytes())?;
+    file.write_all(content.as_bytes())?;
     Ok(new_file_path)
 }

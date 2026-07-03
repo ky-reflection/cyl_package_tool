@@ -35,7 +35,7 @@ pub struct Cytus1ChartNote {
     hold_length: f64,
 }
 #[derive(Serialize, Deserialize, Debug, Clone, Getters, Setters, MutGetters)]
-
+#[derive(Default)]
 pub struct Cytus1ChartLink {
     #[getset(get = "pub", set = "pub", get_mut = "pub")]
     link: Vec<u32>,
@@ -61,11 +61,6 @@ impl Cytus1ChartNote {
             x,
             hold_length,
         }
-    }
-}
-impl Default for Cytus1ChartLink {
-    fn default() -> Self {
-        Self { link: Vec::new() }
     }
 }
 impl fmt::Display for Cytus1Chart {
@@ -182,7 +177,7 @@ impl FromStr for Cytus1Chart {
 
 impl Cytus1Chart {
     #[allow(dead_code)]
-    fn into_c2chart(&self) -> Result<CylheimChart, CylToolError> {
+    fn generate_c2chart(&self) -> Result<CylheimChart, CylToolError> {
         Err(CylToolError::from("error"))
     }
 }

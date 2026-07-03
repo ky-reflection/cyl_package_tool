@@ -6,6 +6,7 @@ use super::{
 };
 use getset::{Getters, MutGetters, Setters};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 #[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone, MutGetters)]
 #[allow(unused)]
 pub struct CylheimChart {
@@ -40,7 +41,6 @@ pub(crate) struct CylheimChartPage {
     end_tick: u32,
     #[getset(get = "pub", set = "pub")]
     scan_line_direction: i32,
-    #[getset(get = "pub", set = "pub")]
     #[getset(get = "pub", set = "pub")]
     #[serde(rename = "PositionFunction", skip_serializing_if = "Option::is_none")]
     position_function: Option<CylheimChartPagePositionFunction>,
@@ -124,10 +124,7 @@ impl CylheimChart {
         &self,
         page_shift: Option<f64>,
     ) -> Result<Cytus1Chart, CylToolError> {
-        let check_note_type = |note_type: u32| match note_type {
-            0 | 1 | 3 | 4 => true,
-            _ => false,
-        };
+        let check_note_type = |note_type: u32| matches!(note_type, 0 | 1 | 3 | 4);
         let get_tick_time_second = |tempo: u32, time_base: u32, tick: u32| {
             tick as f64 / time_base as f64 * tempo as f64 / 1000.0 / 1000.0
         };
@@ -146,8 +143,8 @@ impl CylheimChart {
             }
         }
         let time_base = self.time_base;
-        let base_page_size = self.page_list.get(0).unwrap().get_page_size();
-        let base_tempo = self.tempo_list.get(0).unwrap();
+        let base_page_size = self.page_list.first().unwrap().get_page_size();
+        let base_tempo = self.tempo_list.first().unwrap();
         for (page_index, page) in self.page_list.iter().enumerate() {
             if page.get_page_size() != base_page_size {
                 return Err(CylToolError::from(format!(
@@ -239,12 +236,12 @@ impl CylheimChart {
         let mut current_chart = self.clone();
         let mut cytus1_flag_check = !use_flag;
         if use_flag {
-            if let Some(cytus1_flag) = current_chart.event_order_list.get(0) {
+            if let Some(cytus1_flag) = current_chart.event_order_list.first() {
                 if current_chart.event_order_list.len() == 1
                     && cytus1_flag.tick == 0
                     && cytus1_flag.event_list.len() == 1
                 {
-                    if let Some(cytus1_flag_event) = cytus1_flag.event_list.get(0) {
+                    if let Some(cytus1_flag_event) = cytus1_flag.event_list.first() {
                         if cytus1_flag_event.event_args.contains("#DEFINE CYTUS1") {
                             cytus1_flag_check = true;
                         }
@@ -253,14 +250,14 @@ impl CylheimChart {
             }
         }
         if !cytus1_flag_check {
-            return Err(CylToolError::from(format!("Cannot find cytus1_flag.")));
+            return Err(CylToolError::from("Cannot find cytus1_flag.".to_string()));
         }
         let mut cytus1_tempo_check = false;
         match current_chart.tempo_list.len() {
             2 => {
-                if let Some(zero_tempo) = current_chart.tempo_list.get(0) {
+                if let Some(zero_tempo) = current_chart.tempo_list.first() {
                     if let Some(true_tempo) = current_chart.tempo_list.get(1) {
-                        if let Some(first_page) = current_chart.page_list.get(0) {
+                        if let Some(first_page) = current_chart.page_list.first() {
                             if zero_tempo.tick == 0
                                 && zero_tempo.value == 0
                                 && true_tempo.tick - zero_tempo.tick > 0
@@ -275,21 +272,17 @@ impl CylheimChart {
                 }
             }
             1 => {
-                if let Some(true_tempo) = current_chart.tempo_list.get(0) {
+                if let Some(true_tempo) = current_chart.tempo_list.first() {
                     cytus1_tempo_check = true_tempo.tick == 0 && true_tempo.value > 0
                 }
             }
             _ => (),
         };
         if !cytus1_tempo_check {
-            return Err(CylToolError::from(format!("Invalid tempo.")));
+            return Err(CylToolError::from("Invalid tempo.".to_string()));
         }
         let time_base = current_chart.time_base;
-        let true_tempo = current_chart
-            .tempo_list
-            .get(current_chart.tempo_list.len() - 1)
-            .unwrap()
-            .clone();
+        let true_tempo = current_chart.tempo_list.last().unwrap().clone();
         let page_shift = get_tick_time_second(true_tempo.value, time_base, true_tempo.tick);
         current_chart.event_order_list_mut().clear();
         current_chart.tempo_list_mut().clear();
@@ -300,10 +293,54 @@ impl CylheimChart {
         for note in current_chart.note_list_mut() {
             note.set_tick(note.tick - true_tempo.tick);
         }
-        let target = current_chart.to_cytus1_chart_directly(Some(page_shift));
-        target
+
+        current_chart.to_cytus1_chart_directly(Some(page_shift))
+    }
+    #[allow(dead_code)]
+    pub fn sort_internal_data(&mut self) {
+        self.page_list.sort_by_key(|page| page.start_tick);
+        self.tempo_list.sort_by_key(|tempo| tempo.tick);
+        self.event_order_list
+            .sort_by_key(|event_list| event_list.tick);
+        self.note_list.sort_by_key(|note| (note.tick, note.id));
+        for event_list in &mut self.event_order_list {
+            event_list
+                .event_list
+                .sort_by_key(|event| (event.event_type, event.event_args.clone()));
+        }
+    }
+    #[allow(dead_code)]
+    pub fn sort_and_reassign_note_ids(&mut self) {
+        self.note_list.sort_by_key(|note| note.tick);
+        let old_to_new: HashMap<u32, u32> = self
+            .note_list
+            .iter()
+            .enumerate()
+            .map(|(new_id, note)| (note.id, new_id as u32))
+            .collect();
+        for (new_id, note) in self.note_list.iter_mut().enumerate() {
+            note.id = new_id as u32;
+        }
+        for note in self.note_list.iter_mut() {
+            if note.next_id >= 0 {
+                if let Some(&mapped) = old_to_new.get(&(note.next_id as u32)) {
+                    note.next_id = mapped as i32;
+                }
+            }
+        }
     }
 }
+
+pub fn load_chart_from_backup(input: &str) -> Result<CylheimChart, CylToolError> {
+    let input_json: serde_json::Value = serde_json::from_str(input)?;
+    let chart_backup: Result<&Value, CylToolError> = input_json
+        .get("chartBackup")
+        .ok_or("Cannot find chart backup.".into());
+    let chart_backup = chart_backup?;
+    let chart: CylheimChart = serde_json::from_value(chart_backup.clone())?;
+    Ok(chart)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -316,9 +353,13 @@ mod test {
     fn get_output_path(filename: &str) -> String {
         TEST_OUTPUT_ROOT.to_owned() + filename
     }
+    fn ensure_output_dir() {
+        fs::create_dir_all(TEST_OUTPUT_ROOT).unwrap();
+    }
     #[test]
     #[allow(unused)]
     fn test_cytus2to1() {
+        ensure_output_dir();
         let path1 = get_resource_path("test_valid_c2to1_chart.json");
         let path2 = get_resource_path("test_cyl_chart.json");
         let path3 = get_output_path("test_c1.txt");
@@ -333,6 +374,7 @@ mod test {
     }
     #[test]
     fn test_cytus2to1_with_flag() {
+        ensure_output_dir();
         let path = get_resource_path("cylchart_with_cytus1_flag.json");
         let path_out = get_output_path("cylchart_with_cytus1_flag_converted.txt");
         let f = fs::read_to_string(path).unwrap();
