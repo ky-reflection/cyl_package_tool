@@ -98,7 +98,34 @@ fn viewer_drag_chain_links() {
         text.contains("stroke-dasharray=\"3,3\""),
         "drag links should render dashed lines"
     );
+    // Each chain segment should connect two distinct note positions (not zero-length).
+    let attrs: Vec<&str> = text
+        .split("<line")
+        .skip(1)
+        .filter(|chunk| chunk.contains("stroke-dasharray=\"3,3\""))
+        .collect();
+    assert_eq!(attrs.len(), 2, "expected two dashed drag chain segments");
+    for chunk in attrs {
+        let x1 = extract_attr(chunk, "x1");
+        let y1 = extract_attr(chunk, "y1");
+        let x2 = extract_attr(chunk, "x2");
+        let y2 = extract_attr(chunk, "y2");
+        assert!(
+            (x1 - x2).abs() > 1.0 || (y1 - y2).abs() > 1.0,
+            "drag link must connect distinct positions, got ({x1},{y1})->({x2},{y2})"
+        );
+    }
     save_case("drag_chain", &text);
+}
+
+fn extract_attr(chunk: &str, name: &str) -> f64 {
+    let marker = format!("{name}=\"");
+    let start = chunk
+        .find(&marker)
+        .unwrap_or_else(|| panic!("{name} not found in line element"));
+    let rest = &chunk[start + marker.len()..];
+    let end = rest.find('"').expect("malformed attribute");
+    rest[..end].parse().unwrap_or_else(|_| panic!("bad {name}"))
 }
 
 #[test]

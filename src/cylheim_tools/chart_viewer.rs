@@ -107,7 +107,9 @@ impl CylheimChartPageViewerHoldBodyHandler {
         self.start_y <= self.end_y
     }
 }
-#[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone, Copy, MutGetters, Default)]
+#[derive(
+    Serialize, Deserialize, Debug, Getters, Setters, Clone, Copy, MutGetters, Default, PartialEq,
+)]
 #[allow(unused)]
 pub(crate) struct CylheimChartPageViewerNotePostion {
     #[getset(get = "pub", set = "pub")]
@@ -304,8 +306,8 @@ pub(crate) fn build_cylheim_chart_viewer(
             let next_note_pos = *note_viewer_list[next_note_index].position();
             let current_note_pos = *note_viewer_list[current_note_index].position();
 
-            note_viewer_list[next_note_index].set_drag_parent_pos(Some(next_note_pos));
-            note_viewer_list[current_note_index].set_drag_child_pos(Some(current_note_pos));
+            note_viewer_list[next_note_index].set_drag_parent_pos(Some(current_note_pos));
+            note_viewer_list[current_note_index].set_drag_child_pos(Some(next_note_pos));
         }
     }
 
@@ -673,7 +675,34 @@ mod test {
         let notes = &viewer.pages()[0].note_list();
         assert_eq!(notes.len(), 3);
         let drag = notes.iter().find(|n| n.note_type() == &3).unwrap();
-        assert!(drag.drag_child_pos().is_some(), "drag head should link to child");
+        let child_pos = drag
+            .drag_child_pos()
+            .expect("drag head should link to child");
+        assert_ne!(
+            child_pos,
+            *drag.position(),
+            "drag_child_pos must point to the next note, not self"
+        );
+
+        let mut linked = 0;
+        for note in notes.iter() {
+            if *note.note_type() != 3 && *note.note_type() != 4 {
+                continue;
+            }
+            if let Some(child) = note.drag_child_pos() {
+                assert_ne!(
+                    *child,
+                    *note.position(),
+                    "chain link must not be zero-length"
+                );
+                linked += 1;
+            }
+            if let Some(parent) = note.drag_parent_pos() {
+                assert_ne!(*parent, *note.position(), "parent pos must not be self");
+            }
+        }
+        assert_eq!(linked, 2, "two chain segments expected in the sample");
+
         let child_count = notes
             .iter()
             .filter(|n| *n.note_type() == 4 && n.drag_parent_pos().is_some())
