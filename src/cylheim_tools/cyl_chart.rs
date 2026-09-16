@@ -49,6 +49,18 @@ impl CylheimChartPage {
     pub fn get_page_size(&self) -> i32 {
         self.end_tick as i32 - self.start_tick as i32
     }
+
+    pub(crate) fn new(start_tick: u32, end_tick: u32, scan_line_direction: i32) -> Self {
+        Self {
+            start_tick,
+            end_tick,
+            scan_line_direction,
+            position_function: Some(CylheimChartPagePositionFunction {
+                position_function_type: 0,
+                position_function_arguments: [1.0, 0.0],
+            }),
+        }
+    }
 }
 #[derive(Serialize, Deserialize, Debug, Getters, Setters, Clone)]
 #[allow(unused)]
@@ -107,17 +119,72 @@ pub(crate) struct CylheimChartNote {
     #[getset(get = "pub", set = "pub")]
     next_id: i32,
     #[getset(get = "pub", set = "pub")]
-    is_forward: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    is_forward: Option<bool>,
     #[getset(get = "pub", set = "pub")]
     #[serde(rename = "NoteDirection")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     falling_note_direction: Option<u32>,
     #[getset(get = "pub", set = "pub")]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     approach_rate: Option<f64>,
 }
 #[allow(dead_code)]
 enum InsertNoteOption {}
+
+impl Default for CylheimChart {
+    fn default() -> Self {
+        Self {
+            format_version: 1,
+            time_base: 480,
+            start_offset_time: 0.0,
+            end_offset_time: None,
+            is_start_without_ui: None,
+            page_list: Vec::new(),
+            tempo_list: Vec::new(),
+            event_order_list: Vec::new(),
+            note_list: Vec::new(),
+        }
+    }
+}
+
+impl CylheimChartTempo {
+    pub(crate) fn new(tick: u32, value: u32) -> Self {
+        Self { tick, value }
+    }
+}
+
+impl CylheimChartNote {
+    pub(crate) fn new_note(
+        page_index: u32,
+        note_type: u32,
+        id: u32,
+        tick: u32,
+        x: f64,
+        has_sibling: bool,
+        hold_tick: u32,
+    ) -> Self {
+        Self {
+            page_index,
+            note_type,
+            id,
+            tick,
+            x,
+            has_sibling,
+            hold_tick,
+            next_id: -1,
+            is_forward: None,
+            falling_note_direction: None,
+            approach_rate: None,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn is_forward_or_false(&self) -> bool {
+        self.is_forward.unwrap_or(false)
+    }
+}
+
 impl CylheimChart {
     #[allow(dead_code)]
     fn to_cytus1_chart_directly(
@@ -143,7 +210,16 @@ impl CylheimChart {
             }
         }
         let time_base = self.time_base;
+        if time_base == 0 {
+            return Err(CylToolError::from("Invalid time_base 0.".to_string()));
+        }
         let base_page_size = self.page_list.first().unwrap().get_page_size();
+        if base_page_size <= 0 {
+            return Err(CylToolError::from(format!(
+                "Page 0 have an invalid pagesize {}.",
+                base_page_size
+            )));
+        }
         let base_tempo = self.tempo_list.first().unwrap();
         for (page_index, page) in self.page_list.iter().enumerate() {
             if page.get_page_size() != base_page_size {
@@ -176,8 +252,15 @@ impl CylheimChart {
             .enumerate()
             .map(|(page_index, page)| (page_index as u32, page))
             .collect();
-        let c1_bpm = 2.0 * 60_000_000.0 / base_tempo.value as f64;
-        let c1_page_size = 240.0 / c1_bpm;
+        // C1 PAGE_SIZE is always 240/BPM seconds. C2 page duration is
+        // (page_ticks / time_base) beats * (tempo_us / 1e6) seconds.
+        // The old formula hardcoded 2 beats/page (960 ticks at time_base 480).
+        let beats_per_page = base_page_size as f64 / time_base as f64;
+        let c1_page_size = beats_per_page * base_tempo.value as f64 / 1_000_000.0;
+        if c1_page_size <= 0.0 {
+            return Err(CylToolError::from("Invalid tempo.".to_string()));
+        }
+        let c1_bpm = 240.0 / c1_page_size;
         let c1_page_shift = page_shift.unwrap_or(0.0);
         let mut c1_note_vec: Vec<Cytus1ChartNote> = note_map
             .iter()
@@ -382,5 +465,73 @@ mod test {
         let cytus1chart = cylchart.to_cytus1_chart_with_pageshift(true).unwrap();
         println!("{}", cytus1chart);
         fs::write(path_out, cytus1chart.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_note_is_forward_optional() {
+        let json = r#"{
+            "format_version": 1,
+            "time_base": 480,
+            "start_offset_time": 0,
+            "page_list": [{"start_tick": 0, "end_tick": 960, "scan_line_direction": 1}],
+            "tempo_list": [{"tick": 0, "value": 500000}],
+            "event_order_list": [],
+            "note_list": [{
+                "page_index": 0, "type": 0, "id": 0, "tick": 0, "x": 0.5,
+                "has_sibling": false, "hold_tick": 0, "next_id": -1
+            }]
+        }"#;
+        let chart: CylheimChart = serde_json::from_str(json).unwrap();
+        assert_eq!(chart.note_list()[0].is_forward(), &None);
+        assert!(!chart.note_list()[0].is_forward_or_false());
+    }
+
+    #[test]
+    fn test_cytus2to1_page_960_matches_legacy_formula() {
+        let json = r#"{
+            "format_version": 1,
+            "time_base": 480,
+            "start_offset_time": 0,
+            "page_list": [
+                {"start_tick": 0, "end_tick": 960, "scan_line_direction": 1},
+                {"start_tick": 960, "end_tick": 1920, "scan_line_direction": -1}
+            ],
+            "tempo_list": [{"tick": 0, "value": 375000}],
+            "event_order_list": [],
+            "note_list": [{
+                "page_index": 1, "type": 0, "id": 0, "tick": 960, "x": 0.5,
+                "has_sibling": false, "hold_tick": 0, "next_id": -1
+            }]
+        }"#;
+        let chart: CylheimChart = serde_json::from_str(json).unwrap();
+        let c1 = chart.to_cytus1_chart_directly(None).unwrap();
+        let expected_bpm = 2.0 * 60_000_000.0 / 375000.0;
+        assert!((*c1.bpm() - expected_bpm).abs() < 1e-9);
+        assert!((*c1.page_size() - 240.0 / expected_bpm).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_cytus2to1_page_1440_uses_three_beats() {
+        let json = r#"{
+            "format_version": 1,
+            "time_base": 480,
+            "start_offset_time": 0,
+            "page_list": [
+                {"start_tick": 0, "end_tick": 1440, "scan_line_direction": 1},
+                {"start_tick": 1440, "end_tick": 2880, "scan_line_direction": -1}
+            ],
+            "tempo_list": [{"tick": 0, "value": 500000}],
+            "event_order_list": [],
+            "note_list": [{
+                "page_index": 1, "type": 0, "id": 0, "tick": 1440, "x": 0.5,
+                "has_sibling": false, "hold_tick": 0, "next_id": -1
+            }]
+        }"#;
+        let chart: CylheimChart = serde_json::from_str(json).unwrap();
+        let c1 = chart.to_cytus1_chart_directly(None).unwrap();
+        // 3 beats/page at 120 musical BPM: C1 BPM = 240 / 1.5s = 160
+        assert!((*c1.bpm() - 160.0).abs() < 1e-9);
+        assert!((*c1.page_size() - 1.5).abs() < 1e-9);
+        assert!((*c1.notes()[0].time() - 1.5).abs() < 1e-9);
     }
 }

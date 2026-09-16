@@ -1,4 +1,4 @@
-﻿use std::{cmp::min, collections::HashMap};
+use std::{cmp::min, collections::HashMap};
 
 use super::{
     cyl_chart::{CylheimChart, CylheimChartPagePositionFunction, CylheimChartTempo},
@@ -258,7 +258,7 @@ pub(crate) fn build_cylheim_chart_viewer(
         Vec::with_capacity(chart.note_list().len());
     for note in chart.note_list() {
         let mut note_viewer = CylheimChartPageViewerNotes {
-            page_index: *note.page_index() - if *note.is_forward() { 1 } else { 0 },
+            page_index: *note.page_index() - if note.is_forward_or_false() { 1 } else { 0 },
             note_type: *note.note_type(),
             id: *note.id(),
             tick: *note.tick(),
@@ -269,7 +269,7 @@ pub(crate) fn build_cylheim_chart_viewer(
             drag_child_pos: None,
             hold_tick: *note.hold_tick(),
             next_id: *note.next_id(),
-            is_forward: *note.is_forward(),
+            is_forward: note.is_forward_or_false(),
             falling_note_direction: None,
             approach_rate: None,
             label: HashMap::new(),
@@ -311,8 +311,7 @@ pub(crate) fn build_cylheim_chart_viewer(
         }
     }
 
-    let mut notes_by_page: Vec<Vec<CylheimChartPageViewerNotes>> =
-        vec![Vec::new(); page_count];
+    let mut notes_by_page: Vec<Vec<CylheimChartPageViewerNotes>> = vec![Vec::new(); page_count];
     for note_viewer in note_viewer_list {
         notes_by_page[note_viewer.page_index as usize].push(note_viewer);
     }
@@ -366,7 +365,7 @@ pub(crate) fn build_cylheim_chart_viewer(
                     drag_child_pos: None,
                     hold_tick: *note.hold_tick(),
                     next_id: *note.next_id(),
-                    is_forward: *note.is_forward(),
+                    is_forward: note.is_forward_or_false(),
                     falling_note_direction: None,
                     approach_rate: None,
                     label: HashMap::new(),
@@ -407,7 +406,7 @@ pub(crate) fn build_cylheim_chart_viewer(
                             drag_child_pos: None,
                             hold_tick: *note.hold_tick(),
                             next_id: *note.next_id(),
-                            is_forward: *note.is_forward(),
+                            is_forward: note.is_forward_or_false(),
                             falling_note_direction: None,
                             approach_rate: None,
                             label: HashMap::new(),
@@ -451,7 +450,7 @@ pub(crate) fn build_cylheim_chart_viewer(
                     drag_child_pos: None,
                     hold_tick: *note.hold_tick(),
                     next_id: *note.next_id(),
-                    is_forward: *note.is_forward(),
+                    is_forward: note.is_forward_or_false(),
                     falling_note_direction: None,
                     approach_rate: None,
                     label: HashMap::new(),
@@ -500,11 +499,8 @@ pub(crate) fn build_cylheim_chart_viewer(
             .map_or(1.0, |x| x.position_function_arguments()[0]);
         if page.tempo_list.is_empty() {
             page.scanline.is_stable = true;
-            let page_scanline = tempo_to_scanline(
-                current_tempo_value,
-                page_size,
-                page_position_function_arg,
-            );
+            let page_scanline =
+                tempo_to_scanline(current_tempo_value, page_size, page_position_function_arg);
             page.scanline.max_scanline = page_scanline;
             page.scanline.min_scanline = page_scanline;
             if current_scanline != page_scanline {
@@ -582,7 +578,6 @@ pub(crate) fn build_cylheim_chart_viewer(
     Ok(chart_viewer)
 }
 
-
 #[allow(dead_code)]
 fn note_y_from_tick(tick: u32, start: u32, end: u32, direction: i32) -> f64 {
     let y = (tick - start) as f64 / (end - start) as f64;
@@ -609,7 +604,8 @@ pub fn svg_to_png(svg_data: &[u8], output_size: Option<(u32, u32)>) -> Result<Ve
         ..Default::default()
     };
 
-    let tree = usvg::Tree::from_data(svg_data, &opt).map_err(|e| anyhow!("SVG 瑙ｆ瀽澶辫触: {}", e))?;
+    let tree =
+        usvg::Tree::from_data(svg_data, &opt).map_err(|e| anyhow!("SVG 瑙ｆ瀽澶辫触: {}", e))?;
 
     // 纭畾杈撳嚭灏哄
     let (width, height) = match output_size {
