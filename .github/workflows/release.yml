@@ -1,0 +1,39 @@
+name: Windows release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test conversion and viewer
+        run: cargo test --locked --no-default-features --features viewer
+      - name: Build Windows tools
+        run: cargo build --locked --release --features viewer --bins
+      - name: Prepare downloads
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path dist | Out-Null
+          Copy-Item target/release/c2to1_converter.exe dist/c2to1_converter-windows-x86_64.exe
+          Copy-Item target/release/chart_viewer.exe dist/chart_viewer-windows-x86_64.exe
+          Get-ChildItem dist/*.exe | Sort-Object Name | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($_.Name)"
+          } | Set-Content dist/SHA256SUMS.txt -Encoding utf8NoBOM
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:GITHUB_REF_NAME dist/*.exe dist/SHA256SUMS.txt --verify-tag --title $env:GITHUB_REF_NAME --notes-file "docs/releases/${env:GITHUB_REF_NAME}.md"

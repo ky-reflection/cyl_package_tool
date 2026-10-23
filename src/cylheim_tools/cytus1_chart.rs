@@ -92,7 +92,7 @@ impl fmt::Display for Cytus1ChartNote {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "Note\t{}\t{:.6}\t{:.6}\t{:.6}",
+            "NOTE\t{}\t{:.6}\t{:.6}\t{:.6}",
             self.id, self.time, self.x, self.hold_length
         )
     }
