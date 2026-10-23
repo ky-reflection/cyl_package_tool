@@ -90,6 +90,9 @@ impl fmt::Display for Cytus1ChartLink {
 }
 impl fmt::Display for Cytus1ChartNote {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Cytoid FromLegacyChart matches the token "NOTE" exactly (same as
+        // official C1 charts). "Note" is skipped, so every LINK then looks up
+        // a missing id and chart load fails.
         write!(
             f,
             "NOTE\t{}\t{:.6}\t{:.6}\t{:.6}",
@@ -221,7 +224,14 @@ mod test {
             ],
             links: vec![link.clone(), link.clone()],
         };
-        println!("{}", chart);
+        let text = chart.to_string();
+        assert!(
+            text.lines().any(|line| line.starts_with("NOTE\t")),
+            "Cytoid legacy import only accepts the NOTE token, got:\n{text}"
+        );
+        let parsed: Cytus1Chart = text.parse().expect("display format must round-trip");
+        assert_eq!(parsed.notes().len(), chart.notes.len());
+        assert_eq!(parsed.links().len(), chart.links.len());
     }
     #[test]
     fn test_cytus1_chart_from_str() {

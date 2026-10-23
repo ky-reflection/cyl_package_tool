@@ -1,12 +1,12 @@
 [package]
 name = "cyl_package_tool"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 [features]
 default = ["gui"]
 viewer = ["dep:clap", "dep:svg", "dep:resvg", "dep:usvg", "dep:tiny-skia", "dep:anyhow"]
-gui = ["dep:eframe", "dep:rfd"]
+gui = ["dep:eframe", "dep:rfd", "dep:wgpu"]
 
 [dependencies]
 getset = "0.1.2"
@@ -23,8 +23,12 @@ tiny-skia = { version = "0.11.4", optional = true }
 anyhow = { version = "1.0.98", optional = true }
 
 # gui (C2→C1 converter)
-eframe = { version = "0.28.1", optional = true }
+eframe = { version = "0.28.1", default-features = false, features = ["accesskit", "default_fonts", "wgpu", "wayland", "x11"], optional = true }
 rfd = { version = "0.14.1", optional = true }
+
+[target.'cfg(windows)'.dependencies]
+# eframe 0.28 disables wgpu's defaults; selecting DX12 at runtime also requires this feature.
+wgpu = { version = "0.20.1", default-features = false, features = ["dx12"], optional = true }
 
 [[bin]]
 name = "c2to1_converter"

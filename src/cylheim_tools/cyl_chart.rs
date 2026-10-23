@@ -379,6 +379,7 @@ impl CylheimChart {
 
         current_chart.to_cytus1_chart_directly(Some(page_shift))
     }
+    /// Keep page timing intact while deriving the flashing BPM from the source tempo.
     pub fn to_cytus1_chart_with_music_bpm(
         &self,
         use_flag: bool,
