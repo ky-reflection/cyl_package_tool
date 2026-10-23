@@ -1,4 +1,4 @@
-﻿#![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 
 use cyl_package_tool::cylheim_tools::CylheimChart;
 use eframe::egui::{self, CentralPanel, RichText};
@@ -23,6 +23,7 @@ fn main() -> Result<(), eframe::Error> {
 struct MyApp {
     selected_file: Option<PathBuf>,
     message: String,
+    use_music_bpm: bool,
 }
 
 impl Default for MyApp {
@@ -30,6 +31,7 @@ impl Default for MyApp {
         Self {
             selected_file: None,
             message: "No file selected".to_string(),
+            use_music_bpm: false,
         }
     }
 }
@@ -49,7 +51,12 @@ impl eframe::App for MyApp {
                         if let Ok(f) = fs::read_to_string(&path) {
                             let result: Result<CylheimChart, _> = serde_json::from_str(&f);
                             if let Ok(cylchart) = result {
-                                match cylchart.to_cytus1_chart_with_pageshift(false) {
+                                let result = if self.use_music_bpm {
+                                    cylchart.to_cytus1_chart_with_music_bpm(false)
+                                } else {
+                                    cylchart.to_cytus1_chart_with_pageshift(false)
+                                };
+                                match result {
                                     Ok(chart) => {
                                         self.selected_file = Some(path.clone());
                                         let new_file_path = save_new_file(
@@ -80,6 +87,8 @@ impl eframe::App for MyApp {
                         }
                     }
                 }
+                ui.add_space(15.0);
+                ui.checkbox(&mut self.use_music_bpm, "Use updated flashing animation algorithm");
                 ui.add_space(15.0);
                 ui.label(RichText::new(&self.message).size(18.0));
                 // ui.add_space(20.0);
