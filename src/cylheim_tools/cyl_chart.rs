@@ -379,6 +379,15 @@ impl CylheimChart {
 
         current_chart.to_cytus1_chart_directly(Some(page_shift))
     }
+    pub fn to_cytus1_chart_with_music_bpm(
+        &self,
+        use_flag: bool,
+    ) -> Result<Cytus1Chart, CylToolError> {
+        let mut chart = self.to_cytus1_chart_with_pageshift(use_flag)?;
+        chart.set_bpm(120_000_000.0 / self.tempo_list.last().unwrap().value as f64);
+        Ok(chart)
+    }
+
     #[allow(dead_code)]
     pub fn sort_internal_data(&mut self) {
         self.page_list.sort_by_key(|page| page.start_tick);
